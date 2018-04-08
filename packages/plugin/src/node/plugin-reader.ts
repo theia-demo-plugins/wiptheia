@@ -12,12 +12,12 @@ import { BackendApplicationContribution } from '@theia/core/lib/node/backend-app
 import { injectable } from "inversify";
 import * as express from 'express';
 import * as fs from 'fs';
-import { Plugin } from '../common/plugin-protocol';
+import { PluginModel, PluginPackage } from '../common/plugin-protocol';
 import { resolve } from 'path';
 
 @injectable()
 export class HostedPluginReader implements BackendApplicationContribution {
-    private plugin: Plugin | undefined;
+    private plugin: PluginModel | undefined;
     private pluginPath: string;
 
     initialize(): void {
@@ -46,17 +46,20 @@ export class HostedPluginReader implements BackendApplicationContribution {
         }
         const packageJsonPath = path + 'package.json';
         if (fs.existsSync(packageJsonPath)) {
-            const plugin: Plugin = require(packageJsonPath);
-            this.plugin = plugin;
-            if (plugin.theiaPlugin.node) {
-                plugin.theiaPlugin.node = resolve(path, plugin.theiaPlugin.node);
+            const plugin: PluginPackage = require(packageJsonPath);
+
+            // TODO inject PluginMetadata and parse package.json
+            this.plugin = {} as PluginModel;
+
+            if (this.plugin.entryPoint.backend) {
+                this.plugin.entryPoint.backend = resolve(path, this.plugin.entryPoint.backend);
             }
         } else {
             this.plugin = undefined;
         }
     }
 
-    getPlugin(): Plugin | undefined {
+    getPlugin(): PluginModel | undefined {
         return this.plugin;
     }
 }

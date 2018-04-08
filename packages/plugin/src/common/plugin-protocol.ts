@@ -12,11 +12,42 @@ import { JsonRpcServer } from '@theia/core/lib/common/messaging/proxy-factory';
 
 export const hostedServicePath = '/services/hostedPlugin';
 
-export interface Plugin {
+export type apiType = 'theiaPlugin' | 'vscode';
+export interface PluginPackage {
     name: string;
     publisher: string;
     version: string;
-    theiaPlugin: { worker?: string, node?: string };
+    engines: {
+        [T in apiType]: string;
+    };
+    theiaPlugin?: {
+        worker?: string,
+        node?: string
+    };
+    main?: string;
+    displayName: string;
+    description: string;
+    contributes: any;
+}
+
+export interface PluginModel {
+    name: string;
+    publisher: string;
+    version: string;
+    displayName: string;
+    description: string;
+    engine: {
+        type: 'theiaPlugin' | 'vscode';
+        version: string;
+    };
+    entryPoint: {
+        frontend?: string;
+        backend?: string;
+    };
+}
+
+export interface PluginLifecycle {
+    // todo
 }
 
 export const HostedPluginClient = Symbol('HostedPluginClient');
@@ -26,6 +57,6 @@ export interface HostedPluginClient {
 
 export const HostedPluginServer = Symbol('HostedPluginServer');
 export interface HostedPluginServer extends JsonRpcServer<HostedPluginClient> {
-    getHostedPlugin(): Promise<Plugin | undefined>;
+    getHostedPlugin(): Promise<PluginModel | undefined>;
     onMessage(message: string): Promise<void>;
 }

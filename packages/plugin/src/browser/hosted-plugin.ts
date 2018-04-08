@@ -9,7 +9,7 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { injectable, inject, interfaces } from 'inversify';
-import { HostedPluginServer, Plugin } from '../common/plugin-protocol';
+import { HostedPluginServer, PluginModel} from '../common/plugin-protocol';
 import { PluginWorker } from './plugin-worker';
 import { setUpPluginApi } from './main-context';
 import { MAIN_RPC_CONTEXT } from '../api/plugin-api';
@@ -31,25 +31,25 @@ export class HostedPluginSupport {
         });
     }
 
-    private loadPlugin(plugin: Plugin, container: interfaces.Container): void {
-        if (plugin.theiaPlugin!.worker) {
+    private loadPlugin(plugin: PluginModel, container: interfaces.Container): void {
+        if (plugin.entryPoint!.frontend) {
             console.log(`Loading hosted plugin: ${plugin.name}`);
             this.worker = new PluginWorker();
             setUpPluginApi(this.worker.rpc, container);
             const hostedExtManager = this.worker.rpc.getProxy(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT);
             hostedExtManager.$loadPlugin({
-                pluginPath: plugin.theiaPlugin.worker!,
+                pluginPath: plugin.entryPoint.frontend!,
                 name: plugin.name,
                 publisher: plugin.publisher,
                 version: plugin.version
             });
         }
-        if (plugin.theiaPlugin!.node) {
+        if (plugin.entryPoint!.backend) {
             const rpc = this.createServerRpc();
             setUpPluginApi(rpc, container);
             const hostedExtManager = rpc.getProxy(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT);
             hostedExtManager.$loadPlugin({
-                pluginPath: plugin.theiaPlugin.node!,
+                pluginPath: plugin.entryPoint.backend!,
                 name: plugin.name,
                 publisher: plugin.publisher,
                 version: plugin.version
