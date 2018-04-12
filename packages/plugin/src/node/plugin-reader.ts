@@ -9,14 +9,16 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { BackendApplicationContribution } from '@theia/core/lib/node/backend-application';
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import * as express from 'express';
 import * as fs from 'fs';
-import { PluginModel, PluginPackage } from '../common/plugin-protocol';
 import { resolve } from 'path';
+import { PluginModel, PluginPackage } from '../common/plugin-protocol';
+import { MetadataScanner } from './metadata-scanner';
 
 @injectable()
 export class HostedPluginReader implements BackendApplicationContribution {
+    @inject(MetadataScanner) private readonly scanner: MetadataScanner;
     private plugin: PluginModel | undefined;
     private pluginPath: string;
 
@@ -47,9 +49,7 @@ export class HostedPluginReader implements BackendApplicationContribution {
         const packageJsonPath = path + 'package.json';
         if (fs.existsSync(packageJsonPath)) {
             const plugin: PluginPackage = require(packageJsonPath);
-
-            // TODO inject PluginMetadata and parse package.json
-            this.plugin = {} as PluginModel;
+            this.plugin = this.scanner.getPluginModel(plugin);
 
             if (this.plugin.entryPoint.backend) {
                 this.plugin.entryPoint.backend = resolve(path, this.plugin.entryPoint.backend);

@@ -1,0 +1,40 @@
+/*
+ * Copyright (C) 2015-2018 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Red Hat, Inc. - initial API and implementation
+ */
+
+import { injectable } from 'inversify';
+import { pluginEngine, PluginModel, PluginPackage, PluginScanner } from '../../common/plugin-protocol';
+
+@injectable()
+export class TheiaPluginScanner implements PluginScanner {
+    private readonly _apiType: pluginEngine = 'theiaPlugin';
+
+    get apiType(): pluginEngine {
+        return this._apiType;
+    }
+
+    populate(plugin: PluginPackage): PluginModel {
+        return {
+            name: plugin.name,
+            publisher: plugin.publisher,
+            version: plugin.version,
+            displayName: plugin.displayName,
+            description: plugin.description,
+            engine: {
+                type: this._apiType,
+                version: plugin.engines[this._apiType]
+            },
+            entryPoint: {
+                frontend: plugin.theiaPlugin!.frontend,
+                backend: plugin.theiaPlugin!.backend
+            }
+        };
+    }
+}
