@@ -69,18 +69,9 @@ before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
   - export PATH=$HOME/.yarn/bin:$PATH ;
 install: yarn
-script: travis_retry yarn test ;
-notifications:
-  webhooks:
-    urls:
-    - https://webhooks.gitter.im/e/c42ddc125fe6bbfccb48
-    on_success: change
-    on_failure: always
-    on_start: never
+script: travis_retry yarn test:theia ;
 jobs:
   fast_finish: true
-  allow_failures:
-    - os: osx
   include:
   - stage: test
     os: linux
@@ -96,10 +87,14 @@ jobs:
     install: skip
     before_deploy:
       - printf "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}\n" >> ~/.npmrc
-      - yarn
+      - yarn build
+      - export THEIA_HOME=$(pwd)
+      - export PATH=${THEIA_HOME}/node_modules/.bin:${PATH}
+      - cd ${THEIA_HOME}/packages/plugin && find . -name "*.*" -type f -not -path "*node_modules/*" -exec sed -i 's/\@theia\/plugin/\@wiptheia\/plugin/g' {} \;
+      - cd ${THEIA_HOME}/packages/plugin && npm version -no-git-tag-version "0.3.8-$(date +%s)"
     deploy:
       provider: script
-      script: yarn run publish:next
+      script: cd ${THEIA_HOME}/packages/plugin && npm publish --access public
       on:
         branch: master
       skip_cleanup: true
