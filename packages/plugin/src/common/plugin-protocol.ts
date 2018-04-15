@@ -9,6 +9,7 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { JsonRpcServer } from '@theia/core/lib/common/messaging/proxy-factory';
+import { Disposable } from '../plugin/types-impl';
 
 export const hostedServicePath = '/services/hostedPlugin';
 
@@ -35,7 +36,7 @@ export interface PluginScanner {
     /**
      * The type of plugin's API (engine name)
      */
-    apiType: string;
+    apiType: pluginEngine;
 
     /**
      * Creates plugin's model.
@@ -43,7 +44,14 @@ export interface PluginScanner {
      * @param {PluginPackage} plugin
      * @returns {PluginModel}
      */
-    populate(plugin: PluginPackage): PluginModel;
+    getModel(plugin: PluginPackage): PluginModel;
+
+    /**
+     * Creates plugin's lifecycle.
+     *
+     * @returns {PluginLifecycle}
+     */
+    getLifecycle(): PluginLifecycle;
 }
 
 export interface PluginModel {
@@ -63,7 +71,22 @@ export interface PluginModel {
 }
 
 export interface PluginLifecycle {
-    // todo
+    startMethod: string;
+    stopMethod: string;
+    pluginContext: PluginContext | ExtensionContext;
+}
+
+export interface PluginContext {
+    subscriptions: Disposable[];
+}
+
+export interface ExtensionContext {
+    subscriptions: Disposable[];
+}
+
+export interface PluginMetadata {
+    model: PluginModel;
+    lifecycle: PluginLifecycle;
 }
 
 export const HostedPluginClient = Symbol('HostedPluginClient');
@@ -73,6 +96,6 @@ export interface HostedPluginClient {
 
 export const HostedPluginServer = Symbol('HostedPluginServer');
 export interface HostedPluginServer extends JsonRpcServer<HostedPluginClient> {
-    getHostedPlugin(): Promise<PluginModel | undefined>;
+    getHostedPlugin(): Promise<PluginMetadata | undefined>;
     onMessage(message: string): Promise<void>;
 }

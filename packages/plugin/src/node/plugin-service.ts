@@ -11,7 +11,7 @@
 import * as express from 'express';
 import { injectable, inject } from "inversify";
 import { BackendApplicationContribution } from '@theia/core/lib/node/backend-application';
-import { HostedPluginServer, HostedPluginClient, PluginModel } from '../common/plugin-protocol';
+import { HostedPluginServer, HostedPluginClient, PluginMetadata } from '../common/plugin-protocol';
 import { HostedPluginReader } from './plugin-reader';
 import { HostedPluginSupport } from './hosted-plugin';
 
@@ -40,10 +40,10 @@ export class HostedPluginServerImpl implements HostedPluginServer {
     setClient(client: HostedPluginClient): void {
         this.hostedPlugin.setClient(client);
     }
-    getHostedPlugin(): Promise<PluginModel | undefined> {
-        const plugin = this.reader.getPlugin();
-        if (plugin) {
-            this.hostedPlugin.runPlugin(plugin);
+    getHostedPlugin(): Promise<PluginMetadata | undefined> {
+        const pluginMetadata = this.reader.getPlugin();
+        if (pluginMetadata) {
+            this.hostedPlugin.runPlugin(pluginMetadata.model);
         }
         return Promise.resolve(this.reader.getPlugin());
     }

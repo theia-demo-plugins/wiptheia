@@ -13,6 +13,7 @@ import { RPCProtocol } from '../api/rpc-protocol';
 import * as theia from '@theia/plugin';
 import { CommandRegistryImpl } from './command-registry';
 import { Disposable } from './types-impl';
+import { PluginLifecycle } from '../common/plugin-protocol';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
@@ -38,14 +39,14 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
 
 }
 
-export function startExtension(plugin: any, plugins: Array<() => void>): void {
-    if (typeof plugin.doStartThings === 'function') {
-        plugin.doStartThings.apply(global, []);
+export function startExtension(lifecycle: PluginLifecycle, plugin: any, plugins: Array<() => void>): void {
+    if (typeof plugin[lifecycle.startMethod] === 'function') {
+        plugin[lifecycle.startMethod].apply(global, []);
     } else {
         console.log('there is no doStart method on plugin');
     }
 
-    if (typeof plugin.doStopThings === 'function') {
-        plugins.push(plugin.doStopThings);
+    if (typeof plugin[lifecycle.stopMethod] === 'function') {
+        plugins.push(plugin[lifecycle.stopMethod]);
     }
 }

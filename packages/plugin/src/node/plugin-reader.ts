@@ -13,13 +13,13 @@ import { inject, injectable } from "inversify";
 import * as express from 'express';
 import * as fs from 'fs';
 import { resolve } from 'path';
-import { PluginModel, PluginPackage } from '../common/plugin-protocol';
+import { PluginPackage, PluginMetadata } from '../common/plugin-protocol';
 import { MetadataScanner } from './metadata-scanner';
 
 @injectable()
 export class HostedPluginReader implements BackendApplicationContribution {
     @inject(MetadataScanner) private readonly scanner: MetadataScanner;
-    private plugin: PluginModel | undefined;
+    private plugin: PluginMetadata | undefined;
     private pluginPath: string;
 
     initialize(): void {
@@ -49,17 +49,17 @@ export class HostedPluginReader implements BackendApplicationContribution {
         const packageJsonPath = path + 'package.json';
         if (fs.existsSync(packageJsonPath)) {
             const plugin: PluginPackage = require(packageJsonPath);
-            this.plugin = this.scanner.getPluginModel(plugin);
+            this.plugin = this.scanner.getPluginMetadata(plugin);
 
-            if (this.plugin.entryPoint.backend) {
-                this.plugin.entryPoint.backend = resolve(path, this.plugin.entryPoint.backend);
+            if (this.plugin.model.entryPoint.backend) {
+                this.plugin.model.entryPoint.backend = resolve(path, this.plugin.model.entryPoint.backend);
             }
         } else {
             this.plugin = undefined;
         }
     }
 
-    getPlugin(): PluginModel | undefined {
+    getPlugin(): PluginMetadata | undefined {
         return this.plugin;
     }
 }

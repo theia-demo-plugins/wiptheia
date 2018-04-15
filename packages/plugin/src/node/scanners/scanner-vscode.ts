@@ -10,7 +10,8 @@
  */
 
 import { injectable } from 'inversify';
-import { pluginEngine, PluginModel, PluginPackage, PluginScanner } from '../../common/plugin-protocol';
+import { pluginEngine, PluginModel, PluginPackage, PluginScanner, PluginLifecycle } from '../../common/plugin-protocol';
+import { Disposable } from '../../plugin/types-impl';
 
 @injectable()
 export class VsCodePluginScanner implements PluginScanner {
@@ -20,7 +21,7 @@ export class VsCodePluginScanner implements PluginScanner {
         return this._apiType;
     }
 
-    populate(plugin: PluginPackage): PluginModel {
+    getModel(plugin: PluginPackage): PluginModel {
         return {
             name: plugin.name,
             publisher: plugin.publisher,
@@ -35,5 +36,21 @@ export class VsCodePluginScanner implements PluginScanner {
                 backend: plugin.main
             }
         };
+    }
+
+    getLifecycle(): PluginLifecycle {
+        return {
+            startMethod: 'start',
+            stopMethod: 'stop',
+            pluginContext: new ExtensionContext()
+        };
+    }
+}
+
+class ExtensionContext implements ExtensionContext {
+    public _subscriptions: Disposable[] = [];
+
+    public get subscriptions(): Disposable[] {
+        return this._subscriptions;
     }
 }

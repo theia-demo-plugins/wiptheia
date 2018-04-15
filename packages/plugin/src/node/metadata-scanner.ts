@@ -10,7 +10,7 @@
  */
 
 import { injectable, multiInject } from 'inversify';
-import { PluginModel, PluginPackage, PluginScanner } from '../common/plugin-protocol';
+import { PluginPackage, PluginScanner, PluginMetadata } from '../common/plugin-protocol';
 
 @injectable()
 export class MetadataScanner {
@@ -24,8 +24,12 @@ export class MetadataScanner {
         });
     }
 
-    public getPluginModel(plugin: PluginPackage): PluginModel {
-        return this.getScanner(plugin).populate(plugin);
+    public getPluginMetadata(plugin: PluginPackage): PluginMetadata {
+        const scanner = this.getScanner(plugin);
+        return {
+            model: scanner.getModel(plugin),
+            lifecycle: scanner.getLifecycle()
+        };
     }
 
     /**

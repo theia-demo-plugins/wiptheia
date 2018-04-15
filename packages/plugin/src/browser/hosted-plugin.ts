@@ -9,7 +9,7 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { injectable, inject, interfaces } from 'inversify';
-import { HostedPluginServer, PluginModel} from '../common/plugin-protocol';
+import { HostedPluginServer, PluginModel, PluginLifecycle } from '../common/plugin-protocol';
 import { PluginWorker } from './plugin-worker';
 import { setUpPluginApi } from './main-context';
 import { MAIN_RPC_CONTEXT } from '../api/plugin-api';
@@ -24,14 +24,14 @@ export class HostedPluginSupport {
     }
 
     checkAndLoadPlugin(container: interfaces.Container): void {
-        this.server.getHostedPlugin().then(plugin => {
-            if (plugin) {
-                this.loadPlugin(plugin, container);
+        this.server.getHostedPlugin().then((pluginMedata: any) => {
+            if (pluginMedata) {
+                this.loadPlugin(pluginMedata.model, pluginMedata.lifecycle, container);
             }
         });
     }
 
-    private loadPlugin(plugin: PluginModel, container: interfaces.Container): void {
+    private loadPlugin(plugin: PluginModel, pluginLifecycle: PluginLifecycle, container: interfaces.Container): void {
         if (plugin.entryPoint!.frontend) {
             console.log(`Loading hosted plugin: ${plugin.name}`);
             this.worker = new PluginWorker();
@@ -39,9 +39,8 @@ export class HostedPluginSupport {
             const hostedExtManager = this.worker.rpc.getProxy(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT);
             hostedExtManager.$loadPlugin({
                 pluginPath: plugin.entryPoint.frontend!,
-                name: plugin.name,
-                publisher: plugin.publisher,
-                version: plugin.version
+                model: plugin,
+                lifecycle: pluginLifecycle
             });
         }
         if (plugin.entryPoint!.backend) {
@@ -50,9 +49,8 @@ export class HostedPluginSupport {
             const hostedExtManager = rpc.getProxy(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT);
             hostedExtManager.$loadPlugin({
                 pluginPath: plugin.entryPoint.backend!,
-                name: plugin.name,
-                publisher: plugin.publisher,
-                version: plugin.version
+                model: plugin,
+                lifecycle: pluginLifecycle
             });
         }
     }

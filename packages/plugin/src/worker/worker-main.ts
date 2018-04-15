@@ -14,6 +14,7 @@ import { Emitter } from '@theia/core/lib/common/event';
 import { createAPI, startExtension } from '../plugin/plugin-context';
 import { MAIN_RPC_CONTEXT } from '../api/plugin-api';
 import { HostedPluginManagerExtImpl } from '../plugin/hosted-plugin-manager';
+import { Plugin } from '../api/plugin-api';
 
 const ctx = self as any;
 const plugins = new Array<() => void>();
@@ -33,10 +34,10 @@ const theia = createAPI(rpc);
 ctx['theia'] = theia;
 
 rpc.set(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT, new HostedPluginManagerExtImpl({
-    loadPlugin(path: string): void {
-        ctx.importScripts('/hostedPlugin/' + path);
+    loadPlugin(plugin: Plugin): void {
+        ctx.importScripts('/hostedPlugin/' + plugin.pluginPath);
         // FIXME: simplePlugin should come from metadata
-        startExtension(ctx['simplePlugin'], plugins);
+        startExtension(plugin.lifecycle, ctx['simplePlugin'], plugins);
     },
     stopPlugins(): void {
         for (const s of plugins) {

@@ -11,7 +11,7 @@
 import { HostedPluginManagerExt, Plugin } from '../api/plugin-api';
 
 export interface PluginHost {
-    loadPlugin(scriptPath: string): void;
+    loadPlugin(plugin: Plugin): void;
 
     stopPlugins(): void;
 }
@@ -21,8 +21,8 @@ export class HostedPluginManagerExtImpl implements HostedPluginManagerExt {
     constructor(private readonly host: PluginHost) {
     }
 
-    $loadPlugin(ext: Plugin): void {
-        this.host.loadPlugin(ext.pluginPath);
+    $loadPlugin(plugin: Plugin): void {
+        this.host.loadPlugin(plugin);
     }
 
     $stopPlugin(): PromiseLike<void> {
