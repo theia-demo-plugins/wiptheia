@@ -38,10 +38,11 @@ export class TheiaPluginScanner implements PluginScanner {
         };
     }
 
-    getLifecycle(): PluginLifecycle {
+    getLifecycle(plugin: PluginPackage): PluginLifecycle {
         return {
             startMethod: 'start',
-            stopMethod: 'stop'
+            stopMethod: 'stop',
+            moduleName: plugin.theiaPlugin!.frontendModuleName
         };
     }
 }

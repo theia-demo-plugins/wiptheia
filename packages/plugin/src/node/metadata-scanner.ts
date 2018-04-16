@@ -28,7 +28,7 @@ export class MetadataScanner {
         const scanner = this.getScanner(plugin);
         return {
             model: scanner.getModel(plugin),
-            lifecycle: scanner.getLifecycle()
+            lifecycle: scanner.getLifecycle(plugin)
         };
     }
 

@@ -37,10 +37,11 @@ export class VsCodePluginScanner implements PluginScanner {
         };
     }
 
-    getLifecycle(): PluginLifecycle {
+    getLifecycle(plugin: PluginPackage): PluginLifecycle {
         return {
             startMethod: 'start',
-            stopMethod: 'stop'
+            stopMethod: 'stop',
+            moduleName: plugin.theiaPlugin!.frontendModuleName
         };
     }
 }

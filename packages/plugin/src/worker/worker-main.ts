@@ -34,11 +34,11 @@ const theia = createAPI(rpc);
 ctx['theia'] = theia;
 
 rpc.set(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT, new HostedPluginManagerExtImpl({
-    // loadPlugin(path: string, lifecycle: PluginLifecycle): void {
     loadPlugin(plugin: Plugin): void {
         ctx.importScripts('/hostedPlugin/' + plugin.pluginPath);
-        // FIXME: simplePlugin should come from metadata
-        startPlugin(plugin, ctx['simplePlugin'], plugins);
+        if (plugin.lifecycle.moduleName && ctx[plugin.lifecycle.moduleName]) {
+            startPlugin(plugin, ctx[plugin.lifecycle.moduleName], plugins);
+        }
     },
     stopPlugins(pluginIds: string[]): void {
         pluginIds.forEach(pluginId => {

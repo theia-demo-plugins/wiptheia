@@ -22,8 +22,9 @@ export interface PluginPackage {
         [type in pluginEngine]: string;
     };
     theiaPlugin?: {
-        frontend?: string,
-        backend?: string
+        frontend?: string;
+        frontendModuleName?: string;
+        backend?: string;
     };
     main?: string;
     displayName: string;
@@ -51,7 +52,7 @@ export interface PluginScanner {
      *
      * @returns {PluginLifecycle}
      */
-    getLifecycle(): PluginLifecycle;
+    getLifecycle(plugin: PluginPackage): PluginLifecycle;
 }
 
 export interface PluginModel {
@@ -73,6 +74,10 @@ export interface PluginModel {
 export interface PluginLifecycle {
     startMethod: string;
     stopMethod: string;
+    /**
+     * Frontend module name, frontend plugin should expose this name.
+     */
+    moduleName: string | undefined;
 }
 
 export interface PluginContext {
@@ -89,7 +94,7 @@ export interface PluginMetadata {
 }
 
 export function getPluginId(plugin: PluginPackage | PluginModel): string {
-    return `${plugin.publisher}__${plugin.name}`;
+    return `${plugin.publisher}_${plugin.name}`;
 }
 
 export const HostedPluginClient = Symbol('HostedPluginClient');
