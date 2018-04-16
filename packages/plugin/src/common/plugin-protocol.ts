@@ -73,7 +73,6 @@ export interface PluginModel {
 export interface PluginLifecycle {
     startMethod: string;
     stopMethod: string;
-    pluginContext: PluginContext | ExtensionContext;
 }
 
 export interface PluginContext {

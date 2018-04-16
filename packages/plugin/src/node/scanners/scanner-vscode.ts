@@ -11,7 +11,6 @@
 
 import { injectable } from 'inversify';
 import { pluginEngine, PluginModel, PluginPackage, PluginScanner, PluginLifecycle } from '../../common/plugin-protocol';
-import { Disposable } from '../../plugin/types-impl';
 
 @injectable()
 export class VsCodePluginScanner implements PluginScanner {
@@ -41,16 +40,7 @@ export class VsCodePluginScanner implements PluginScanner {
     getLifecycle(): PluginLifecycle {
         return {
             startMethod: 'start',
-            stopMethod: 'stop',
-            pluginContext: new ExtensionContext()
+            stopMethod: 'stop'
         };
-    }
-}
-
-class ExtensionContext implements ExtensionContext {
-    public _subscriptions: Disposable[] = [];
-
-    public get subscriptions(): Disposable[] {
-        return this._subscriptions;
     }
 }
