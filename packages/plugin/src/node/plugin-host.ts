@@ -11,13 +11,13 @@
 
 import { RPCProtocolImpl } from '../api/rpc-protocol';
 import { Emitter } from '@theia/core/lib/common/event';
-import { createAPI, startExtension } from '../plugin/plugin-context';
+import { createAPI, startPlugin } from '../plugin/plugin-context';
 import { MAIN_RPC_CONTEXT } from '../api/plugin-api';
 import { HostedPluginManagerExtImpl } from '../plugin/hosted-plugin-manager';
 import { Plugin } from '../api/plugin-api';
 
 const NODE_MODULE_NAMES = ['@theia/plugin', '@wiptheia/plugin'];
-const plugins = new Array<() => void>();
+const plugins = new Map<string, () => void>();
 
 const emmitter = new Emitter();
 const rpc = new RPCProtocolImpl({
@@ -68,16 +68,20 @@ rpc.set(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT, new HostedPluginManagerExtIm
 
         try {
             const pluginMain = require(plugin.pluginPath);
-            startExtension(plugin.lifecycle, pluginMain, plugins);
+            startPlugin(plugin, pluginMain, plugins);
 
         } catch (e) {
             console.error(e);
         }
     },
-    stopPlugins(): void {
-        console.log("Plugin: Stopping plugins.");
-        for (const s of plugins) {
-            s();
-        }
+    stopPlugins(pluginIds: string[]): void {
+        console.log("Plugin: Stopping plugin: ", pluginIds);
+        pluginIds.forEach(pluginId => {
+            const stopPluginMethod = plugins.get(pluginId);
+            if (stopPluginMethod) {
+                stopPluginMethod();
+                plugins.delete(pluginId);
+            }
+        });
     }
 }));

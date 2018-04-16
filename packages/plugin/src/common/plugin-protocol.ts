@@ -89,6 +89,10 @@ export interface PluginMetadata {
     lifecycle: PluginLifecycle;
 }
 
+export function getPluginId(plugin: PluginPackage | PluginModel): string {
+    return `${plugin.publisher}__${plugin.name}`;
+}
+
 export const HostedPluginClient = Symbol('HostedPluginClient');
 export interface HostedPluginClient {
     postMessage(message: string): Promise<void>;

@@ -13,7 +13,8 @@ import { RPCProtocol } from '../api/rpc-protocol';
 import * as theia from '@theia/plugin';
 import { CommandRegistryImpl } from './command-registry';
 import { Disposable } from './types-impl';
-import { PluginLifecycle } from '../common/plugin-protocol';
+import { Plugin } from '../api/plugin-api';
+import { getPluginId } from '../common/plugin-protocol';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
@@ -39,14 +40,15 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
 
 }
 
-export function startExtension(lifecycle: PluginLifecycle, plugin: any, plugins: Array<() => void>): void {
-    if (typeof plugin[lifecycle.startMethod] === 'function') {
-        plugin[lifecycle.startMethod].apply(global, []);
+export function startPlugin(plugin: Plugin, pluginMain: any, plugins: Map<string, () => void>): void {
+    if (typeof pluginMain[plugin.lifecycle.startMethod] === 'function') {
+        pluginMain[plugin.lifecycle.startMethod].apply(global, []);
     } else {
         console.log('there is no doStart method on plugin');
     }
 
-    if (typeof plugin[lifecycle.stopMethod] === 'function') {
-        plugins.push(plugin[lifecycle.stopMethod]);
+    if (typeof pluginMain[plugin.lifecycle.stopMethod] === 'function') {
+        const pluginId = getPluginId(plugin.model)
+        plugins.set(pluginId, pluginMain[plugin.lifecycle.stopMethod]);
     }
 }

@@ -11,13 +11,13 @@
 
 import { RPCProtocolImpl } from '../api/rpc-protocol';
 import { Emitter } from '@theia/core/lib/common/event';
-import { createAPI, startExtension } from '../plugin/plugin-context';
+import { createAPI, startPlugin } from '../plugin/plugin-context';
 import { MAIN_RPC_CONTEXT } from '../api/plugin-api';
 import { HostedPluginManagerExtImpl } from '../plugin/hosted-plugin-manager';
 import { Plugin } from '../api/plugin-api';
 
 const ctx = self as any;
-const plugins = new Array<() => void>();
+const plugins = new Map<string, () => void>();
 
 const emmitter = new Emitter();
 const rpc = new RPCProtocolImpl({
@@ -34,14 +34,19 @@ const theia = createAPI(rpc);
 ctx['theia'] = theia;
 
 rpc.set(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT, new HostedPluginManagerExtImpl({
+    // loadPlugin(path: string, lifecycle: PluginLifecycle): void {
     loadPlugin(plugin: Plugin): void {
         ctx.importScripts('/hostedPlugin/' + plugin.pluginPath);
         // FIXME: simplePlugin should come from metadata
-        startExtension(plugin.lifecycle, ctx['simplePlugin'], plugins);
+        startPlugin(plugin, ctx['simplePlugin'], plugins);
     },
-    stopPlugins(): void {
-        for (const s of plugins) {
-            s();
-        }
+    stopPlugins(pluginIds: string[]): void {
+        pluginIds.forEach(pluginId => {
+            const stopPluginMethod = plugins.get(pluginId);
+            if (stopPluginMethod) {
+                stopPluginMethod();
+                plugins.delete(pluginId);
+            }
+        });
     }
 }));

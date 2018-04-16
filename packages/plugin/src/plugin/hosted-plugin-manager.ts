@@ -9,24 +9,29 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { HostedPluginManagerExt, Plugin } from '../api/plugin-api';
+import { getPluginId } from '../common/plugin-protocol';
 
 export interface PluginHost {
     loadPlugin(plugin: Plugin): void;
 
-    stopPlugins(): void;
+    stopPlugins(pluginIds: string[]): void;
 }
 
 export class HostedPluginManagerExtImpl implements HostedPluginManagerExt {
 
+    private runningPluginIds: string[];
+
     constructor(private readonly host: PluginHost) {
+        this.runningPluginIds = [];
     }
 
     $loadPlugin(plugin: Plugin): void {
+        this.runningPluginIds.push(getPluginId(plugin.model));
         this.host.loadPlugin(plugin);
     }
 
     $stopPlugin(): PromiseLike<void> {
-        this.host.stopPlugins();
+        this.host.stopPlugins(this.runningPluginIds);
         return Promise.resolve();
     }
 
