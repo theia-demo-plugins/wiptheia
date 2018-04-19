@@ -48,7 +48,7 @@ export function startPlugin(plugin: Plugin, pluginMain: any, plugins: Map<string
     }
 
     if (typeof pluginMain[plugin.lifecycle.stopMethod] === 'function') {
-        const pluginId = getPluginId(plugin.model)
+        const pluginId = getPluginId(plugin.model);
         plugins.set(pluginId, pluginMain[plugin.lifecycle.stopMethod]);
     }
 }

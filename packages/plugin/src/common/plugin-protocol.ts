@@ -9,11 +9,19 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { JsonRpcServer } from '@theia/core/lib/common/messaging/proxy-factory';
+import { RPCProtocol } from '../api/rpc-protocol';
 import { Disposable } from '../plugin/types-impl';
 
 export const hostedServicePath = '/services/hostedPlugin';
 
+/**
+ * Plugin engine (API) type, i.e. 'theia', 'vscode', etc.
+ */
 export type pluginEngine = string;
+
+/**
+ * This interface describes a package.json object.
+ */
 export interface PluginPackage {
     name: string;
     publisher: string;
@@ -33,6 +41,10 @@ export interface PluginPackage {
 }
 
 export const PluginScanner = Symbol('PluginScanner');
+
+/**
+ * This scanner process package.json object and returns plugin metadata objects.
+ */
 export interface PluginScanner {
     /**
      * The type of plugin's API (engine name)
@@ -55,6 +67,9 @@ export interface PluginScanner {
     getLifecycle(plugin: PluginPackage): PluginLifecycle;
 }
 
+/**
+ * This interface describes a plugin model object, which is populated from package.json.
+ */
 export interface PluginModel {
     name: string;
     publisher: string;
@@ -71,13 +86,31 @@ export interface PluginModel {
     };
 }
 
+/**
+ * This interface describes a plugin lifecycle object.
+ */
 export interface PluginLifecycle {
     startMethod: string;
     stopMethod: string;
     /**
      * Frontend module name, frontend plugin should expose this name.
      */
-    moduleName: string | undefined;
+    frontendModuleName?: string;
+    /**
+     * Path to the script which should do some initialization before frontend plugin is loaded.
+     */
+    frontendInitPath?: string;
+    /**
+     * Path to the script which should do some initialization before backend plugin is loaded.
+     */
+    backendInitPath?: string;
+}
+
+/**
+ * The export function of initialization module of backend plugin.
+ */
+export interface BackendInitializationFn {
+    (rpc: RPCProtocol): void;
 }
 
 export interface PluginContext {

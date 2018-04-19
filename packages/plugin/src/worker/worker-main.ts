@@ -34,10 +34,13 @@ const theia = createAPI(rpc);
 ctx['theia'] = theia;
 
 rpc.set(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT, new HostedPluginManagerExtImpl({
+    initialize(contextPath: string): void {
+        ctx.importScripts('/context/' + contextPath);
+    },
     loadPlugin(plugin: Plugin): void {
         ctx.importScripts('/hostedPlugin/' + plugin.pluginPath);
-        if (plugin.lifecycle.moduleName && ctx[plugin.lifecycle.moduleName]) {
-            startPlugin(plugin, ctx[plugin.lifecycle.moduleName], plugins);
+        if (plugin.lifecycle.frontendModuleName && ctx[plugin.lifecycle.frontendModuleName]) {
+            startPlugin(plugin, ctx[plugin.lifecycle.frontendModuleName], plugins);
         }
     },
     stopPlugins(pluginIds: string[]): void {

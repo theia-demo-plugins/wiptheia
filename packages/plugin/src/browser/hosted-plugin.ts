@@ -12,7 +12,7 @@ import { injectable, inject, interfaces } from 'inversify';
 import { HostedPluginServer, PluginModel, PluginLifecycle } from '../common/plugin-protocol';
 import { PluginWorker } from './plugin-worker';
 import { setUpPluginApi } from './main-context';
-import { MAIN_RPC_CONTEXT } from '../api/plugin-api';
+import { MAIN_RPC_CONTEXT, Plugin } from '../api/plugin-api';
 import { HostedPluginWatcher } from './hosted-plugin-watcher';
 import { RPCProtocol, RPCProtocolImpl } from '../api/rpc-protocol';
 @injectable()
@@ -31,27 +31,35 @@ export class HostedPluginSupport {
         });
     }
 
-    private loadPlugin(plugin: PluginModel, pluginLifecycle: PluginLifecycle, container: interfaces.Container): void {
-        if (plugin.entryPoint!.frontend) {
-            console.log(`Loading hosted plugin: ${plugin.name}`);
+    private loadPlugin(pluginModel: PluginModel, pluginLifecycle: PluginLifecycle, container: interfaces.Container): void {
+        if (pluginModel.entryPoint!.frontend) {
+            console.log(`Loading hosted plugin: ${pluginModel.name}`);
             this.worker = new PluginWorker();
             setUpPluginApi(this.worker.rpc, container);
             const hostedExtManager = this.worker.rpc.getProxy(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT);
-            hostedExtManager.$loadPlugin({
-                pluginPath: plugin.entryPoint.frontend!,
-                model: plugin,
+            const plugin: Plugin = {
+                pluginPath: pluginModel.entryPoint.frontend!,
+                model: pluginModel,
                 lifecycle: pluginLifecycle
-            });
+            };
+            if (pluginLifecycle.frontendInitPath) {
+                hostedExtManager.$initialize(pluginLifecycle.frontendInitPath);
+            }
+            hostedExtManager.$loadPlugin(plugin);
         }
-        if (plugin.entryPoint!.backend) {
+        if (pluginModel.entryPoint!.backend) {
             const rpc = this.createServerRpc();
             setUpPluginApi(rpc, container);
             const hostedExtManager = rpc.getProxy(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT);
-            hostedExtManager.$loadPlugin({
-                pluginPath: plugin.entryPoint.backend!,
-                model: plugin,
+            const plugin: Plugin = {
+                pluginPath: pluginModel.entryPoint.backend!,
+                model: pluginModel,
                 lifecycle: pluginLifecycle
-            });
+            };
+            if (pluginLifecycle.backendInitPath) {
+                hostedExtManager.$initialize(pluginLifecycle.backendInitPath);
+            }
+            hostedExtManager.$loadPlugin(plugin);
         }
     }
 

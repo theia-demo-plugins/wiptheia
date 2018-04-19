@@ -13,6 +13,7 @@ import * as theia from '@theia/plugin';
 import { PluginLifecycle, PluginModel } from '../common/plugin-protocol';
 
 export interface HostedPluginManagerExt {
+    $initialize(contextPath: string): void;
     $loadPlugin(plugin: Plugin): void;
     $stopPlugin(): PromiseLike<void>;
 }

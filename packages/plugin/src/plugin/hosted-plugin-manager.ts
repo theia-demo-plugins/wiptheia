@@ -12,6 +12,8 @@ import { HostedPluginManagerExt, Plugin } from '../api/plugin-api';
 import { getPluginId } from '../common/plugin-protocol';
 
 export interface PluginHost {
+    initialize(contextPath: string): void;
+
     loadPlugin(plugin: Plugin): void;
 
     stopPlugins(pluginIds: string[]): void;
@@ -23,6 +25,10 @@ export class HostedPluginManagerExtImpl implements HostedPluginManagerExt {
 
     constructor(private readonly host: PluginHost) {
         this.runningPluginIds = [];
+    }
+
+    $initialize(contextPath: string): void {
+        this.host.initialize(contextPath);
     }
 
     $loadPlugin(plugin: Plugin): void {

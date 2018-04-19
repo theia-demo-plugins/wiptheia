@@ -39,9 +39,10 @@ export class VsCodePluginScanner implements PluginScanner {
 
     getLifecycle(plugin: PluginPackage): PluginLifecycle {
         return {
-            startMethod: 'start',
-            stopMethod: 'stop',
-            moduleName: plugin.theiaPlugin!.frontendModuleName
+            startMethod: 'activate',
+            stopMethod: 'deactivate',
+
+            backendInitPath: 'backend-init-vscode.js'
         };
     }
 }
