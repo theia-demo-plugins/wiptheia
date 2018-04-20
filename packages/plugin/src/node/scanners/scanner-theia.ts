@@ -10,13 +10,20 @@
  */
 
 import { injectable } from 'inversify';
-import { pluginEngine, PluginModel, PluginPackage, PluginScanner, PluginLifecycle } from '../../common/plugin-protocol';
+import {
+    PluginEngine,
+    PluginModel,
+    PluginPackage,
+    PluginScanner,
+    PluginLifecycle,
+    buildFrontendModuleName
+} from '../../common/plugin-protocol';
 
 @injectable()
 export class TheiaPluginScanner implements PluginScanner {
-    private readonly _apiType: pluginEngine = 'theiaPlugin';
+    private readonly _apiType: PluginEngine = 'theiaPlugin';
 
-    get apiType(): pluginEngine {
+    get apiType(): PluginEngine {
         return this._apiType;
     }
 
@@ -42,7 +49,7 @@ export class TheiaPluginScanner implements PluginScanner {
         return {
             startMethod: 'start',
             stopMethod: 'stop',
-            frontendModuleName: plugin.theiaPlugin!.frontendModuleName,
+            frontendModuleName: buildFrontendModuleName(plugin),
 
             backendInitPath: 'backend-init-theia.js'
         };

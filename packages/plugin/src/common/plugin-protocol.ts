@@ -15,9 +15,9 @@ import { Disposable } from '../plugin/types-impl';
 export const hostedServicePath = '/services/hostedPlugin';
 
 /**
- * Plugin engine (API) type, i.e. 'theia', 'vscode', etc.
+ * Plugin engine (API) type, i.e. 'theiaPlugin', 'vscode', etc.
  */
-export type pluginEngine = string;
+export type PluginEngine = string;
 
 /**
  * This interface describes a package.json object.
@@ -27,11 +27,10 @@ export interface PluginPackage {
     publisher: string;
     version: string;
     engines: {
-        [type in pluginEngine]: string;
+        [type in PluginEngine]: string;
     };
     theiaPlugin?: {
         frontend?: string;
-        frontendModuleName?: string;
         backend?: string;
     };
     main?: string;
@@ -49,7 +48,7 @@ export interface PluginScanner {
     /**
      * The type of plugin's API (engine name)
      */
-    apiType: pluginEngine;
+    apiType: PluginEngine;
 
     /**
      * Creates plugin's model.
@@ -77,7 +76,7 @@ export interface PluginModel {
     displayName: string;
     description: string;
     engine: {
-        type: pluginEngine;
+        type: PluginEngine;
         version: string;
     };
     entryPoint: {
@@ -128,6 +127,10 @@ export interface PluginMetadata {
 
 export function getPluginId(plugin: PluginPackage | PluginModel): string {
     return `${plugin.publisher}_${plugin.name}`;
+}
+
+export function buildFrontendModuleName(plugin: PluginPackage | PluginModel): string {
+    return `${plugin.publisher}_${plugin.name}`.replace(/\W/g, '_');
 }
 
 export const HostedPluginClient = Symbol('HostedPluginClient');

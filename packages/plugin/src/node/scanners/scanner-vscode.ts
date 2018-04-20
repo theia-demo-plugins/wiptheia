@@ -10,13 +10,13 @@
  */
 
 import { injectable } from 'inversify';
-import { pluginEngine, PluginModel, PluginPackage, PluginScanner, PluginLifecycle } from '../../common/plugin-protocol';
+import { PluginEngine, PluginModel, PluginPackage, PluginScanner, PluginLifecycle } from '../../common/plugin-protocol';
 
 @injectable()
 export class VsCodePluginScanner implements PluginScanner {
-    private readonly _apiType: pluginEngine = 'vscode';
+    private readonly _apiType: PluginEngine = 'vscode';
 
-    get apiType(): pluginEngine {
+    get apiType(): PluginEngine {
         return this._apiType;
     }
 

@@ -39,7 +39,11 @@ rpc.set(MAIN_RPC_CONTEXT.HOSTED_PLUGIN_MANAGER_EXT, new HostedPluginManagerExtIm
     },
     loadPlugin(plugin: Plugin): void {
         ctx.importScripts('/hostedPlugin/' + plugin.pluginPath);
-        if (plugin.lifecycle.frontendModuleName && ctx[plugin.lifecycle.frontendModuleName]) {
+        if (plugin.lifecycle.frontendModuleName) {
+            if (!ctx[plugin.lifecycle.frontendModuleName]) {
+                console.error(`WebWorker: Cannot start plugin "${plugin.model.name}". Frontend plugin not found: "${plugin.lifecycle.frontendModuleName}"`);
+                return;
+            }
             startPlugin(plugin, ctx[plugin.lifecycle.frontendModuleName], plugins);
         }
     },
