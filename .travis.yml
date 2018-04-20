@@ -6,44 +6,56 @@ git:
 cache:
   yarn: true
   directories:
+  # All directories need to be listed here, because Travis does not support globs.
+  # Generate with jq ".modulesFolders[]" -r node_modules/.yarn-integrity | sort -u | awk '{print "  - " $1}'
+  - dev-packages/application-manager/node_modules
+  - dev-packages/application-package/node_modules
+  - examples/browser/node_modules
+  - examples/electron/node_modules
   - node_modules
+  - packages/callhierarchy/node_modules
+  - packages/core/node_modules
+  - packages/cpp/node_modules
+  - packages/editor/node_modules
+  - packages/extension-manager/node_modules
+  - packages/file-search/node_modules
+  - packages/filesystem/node_modules
+  - packages/git/node_modules
+  - packages/java/node_modules
+  - packages/keymaps/node_modules
+  - packages/languages/node_modules
+  - packages/markers/node_modules
+  - packages/merge-conflicts/node_modules
+  - packages/messages/node_modules
+  - packages/metrics/node_modules
+  - packages/monaco/node_modules
+  - packages/navigator/node_modules
+  - packages/outline-view/node_modules
+  - packages/output/node_modules
+  - packages/preferences/node_modules
+  - packages/preview/node_modules
+  - packages/process/node_modules
+  - packages/python/node_modules
+  - packages/search-in-workspace/node_modules
+  - packages/task/node_modules
+  - packages/terminal/node_modules
+  - packages/typescript/node_modules
+  - packages/userstorage/node_modules
+  - packages/variable-resolver/node_modules
+  - packages/workspace/node_modules
+  - packages/plugin/node_modules
 branches:
   only:
   - master
-env:
-  global:
-    - secure: es511klr3A8rLVIQ+ZxWkYl2/OLaZYzHpLH94O0EqFDC05t7sk76WOD+9fVT0jkINUKt7sK4Nozv19GmNYxFVXKaWwAH9jt7sHKYgbfCr+vTg58z9jyposMZSGEgsGPSbFn5DxPS7KdWbfQDEjxX18yiKMKN9k+7XwkC8p+WSgy4I30M5Y4YXffQooEwjqJpTdkpOm6p+o6t99mp3ufaxG5VOLtSwsZ0r3cKJo0rbqKxJGA62eNYLYksQ7PsFHDE2stQ8IDxFNXOrXB6ocwwd7KGphJIofU/t1UCXjpsGn0Ozr4LYvSpvl9nKQBmA3prKuAOnygLZh0YfYACIoIpBFa0/igxdX7j7INgp50Q+6CHRWwCb+YqZPgJ297EZi5mVKYNlAh0OeKKTo0NanunWR2pnzj29MGzR40wJqPVhQBRQvaKannwpoY5opK8MWi9jnDDY3xpzgZ8na3yOkw9wQ+a2nUm13BZnWmMDODGnaf9vy9eQ7bB26eiU2VSHlNWeniqDMY81sjqBlst22bHR4IgsI4qkh5UXMyyvMKbXltUIXERdCv1yK/Faa/VJ0Qrs+mk+G23bkT8/1f6cHBhjiVJX5HhXLcN3lHxImi+K9NkuCn8g+okX+SfD2lT5OPpRYHS8Jb51frNUIDWqWqRcjCioNjcuup2o6nbTlJaFb0=
-    - CXX=g++-4.8
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-4.8
-    - oracle-java9-set-default
-    - libsecret-1-dev
-    chrome: stable
-before_script:
-  - export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start ;
-  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost \&  ;
 before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.2.1
   - export PATH=$HOME/.yarn/bin:$PATH ;
 install: yarn
-script: travis_retry yarn test ;
-notifications:
-  webhooks:
-    urls:
-    - https://webhooks.gitter.im/e/c42ddc125fe6bbfccb48
-    on_success: change
-    on_failure: always
-    on_start: never
+script: travis_retry yarn test:theia ;
 jobs:
   fast_finish: true
-  allow_failures:
-    - os: osx
   include:
-  - state: test
+  - stage: test
     os: linux
   - stage: deploy
     os: linux
@@ -52,15 +64,16 @@ jobs:
     install: skip
     before_deploy:
       - printf "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}\n" >> ~/.npmrc
-      - yarn
+      - yarn build
+      - export THEIA_HOME=$(pwd)
+      - export PATH=${THEIA_HOME}/node_modules/.bin:${PATH}
+      - cd ${THEIA_HOME}/packages/plugin && find . -name "*.*" -type f -not -path "*node_modules/*" -exec sed -i 's/\@theia\/plugin/\@wiptheia\/plugin/g' {} \;
+      - cd ${THEIA_HOME}/packages/plugin && npm version -no-git-tag-version "0.3.8-$(date +%s)"
     deploy:
       provider: script
-      script: yarn run publish:next
+      script: cd ${THEIA_HOME}/packages/plugin && npm publish --access public
       on:
         branch: master
       skip_cleanup: true
-  - stage: OSx test
-    os: osx
-    env: CXX=c++
-    before_script: skip
-    script: travis_retry yarn test:theia ;
+
+
