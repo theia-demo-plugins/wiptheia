@@ -34,6 +34,8 @@ cache:
   - packages/navigator/node_modules
   - packages/outline-view/node_modules
   - packages/output/node_modules
+  - packages/plugin/node_modules
+  - packages/plugin-ext/node_modules
   - packages/preferences/node_modules
   - packages/preview/node_modules
   - packages/process/node_modules
@@ -90,7 +92,7 @@ jobs:
       - export THEIA_HOME=$(pwd)
       - export PATH=${THEIA_HOME}/node_modules/.bin:${PATH}
       - cd ${THEIA_HOME}/packages/plugin && find . -name "*.*" -type f -not -path "*node_modules/*" -exec sed -i 's/\@theia\/plugin/\@wiptheia\/plugin/g' {} \;
-      - cd ${THEIA_HOME}/packages/plugin && npm version -no-git-tag-version "0.3.8-$(date +%s)"
+      - cd ${THEIA_HOME}/packages/plugin && npm version -no-git-tag-version "0.3.10-$(date +%s)"
     deploy:
       provider: script
       script: cd ${THEIA_HOME}/packages/plugin && npm publish --access public
