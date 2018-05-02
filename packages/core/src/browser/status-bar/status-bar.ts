@@ -41,6 +41,11 @@ export interface StatusBarEntry {
     // tslint:disable-next-line:no-any
     arguments?: any[];
     priority?: number;
+    style?: StatusBarEntryStyle;
+}
+
+export enum StatusBarEntryStyle {
+    WARNING, ERROR, SUCCESS, INFO
 }
 
 export enum StatusBarAlignment {
@@ -159,6 +164,21 @@ export class StatusBarImpl extends VirtualWidget implements StatusBar {
             attrs.className = 'element hasCommand';
         } else {
             attrs.className = 'element';
+        }
+
+        switch (entry.style) {
+            case StatusBarEntryStyle.WARNING:
+                attrs.className += " warning";
+                break;
+            case StatusBarEntryStyle.ERROR:
+                attrs.className += " error";
+                break;
+            case StatusBarEntryStyle.SUCCESS:
+                attrs.className += " success";
+                break;
+            case StatusBarEntryStyle.INFO:
+                attrs.className += " info";
+                break;
         }
 
         if (entry.tooltip) {
