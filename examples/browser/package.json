@@ -24,6 +24,7 @@
     "@theia/navigator": "^0.3.10",
     "@theia/outline-view": "^0.3.10",
     "@theia/output": "^0.3.10",
+    "@theia/plugin-ext": "^0.3.10",
     "@theia/preferences": "^0.3.10",
     "@theia/preview": "^0.3.10",
     "@theia/process": "^0.3.10",
