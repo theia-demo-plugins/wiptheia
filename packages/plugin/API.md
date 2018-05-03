@@ -51,3 +51,33 @@ theia.window.showQuickPick(["foo", "bar", "foobar"], option).then((val: string[]
         console.log(`Quick Pick Selected: ${val}`);
     });
 ```
+### Terminal 
+
+Function to create new terminal with specified arguments: 
+
+    theia.window.createTerminal("Bash terminal", "/bin/bash", shellArgs: ["-l"]);
+
+You can create terminal with specified options:
+
+    const options: theia.TerminalOptions {
+		name: "Bash terminal",
+		shellPath: "/bin/bash";
+        shellArgs: ["-l"];
+		cwd: "/projects"; 
+		env: { "TERM": "screen" };
+	};
+
+Where are:
+ - "shellPath" - shell executable command, for example "/bin/bash", "bash", "sh" or so on.
+ - "shellArgs" - shell command arguments, for example without login: "-l". If you defined shell command "/bin/bash" and set up shell arguments "-l" then will be created terminal process with command "/bin/bash -l".
+And client side will connect to stdin/stdout of this process to interaction with user.
+ - "cwd" - current working directory;
+Function to create new terminal with defined theia.TerminalOptions described above.
+ - "env"- enviroment variables for terminal process, for example TERM - identifier terminal window capabilities.
+
+Function to create new terminal with defined theia.TerminalOptions described above:
+
+    theia.window.createTerminal(options);
+
+Subscribe to close terminal event:
+    # theia.window.onDidCloseTerminal: Event<Terminal>; // todo

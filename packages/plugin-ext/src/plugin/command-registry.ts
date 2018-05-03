@@ -35,7 +35,7 @@ export class CommandRegistryImpl implements CommandRegistryExt {
     }
 
     registerHandler(commandId: string, handler: Handler): Disposable {
-        if (this.commands.has(commandId)) {
+        if (this.commands.has(commandId)) { // this.commands.get(commandId)
             throw new Error(`Command ${commandId} already has handler`);
         }
         this.commands.set(commandId, handler);

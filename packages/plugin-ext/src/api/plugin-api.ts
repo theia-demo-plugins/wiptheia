@@ -17,7 +17,7 @@ export interface HostedPluginManagerExt {
 export interface Plugin {
     pluginPath: string;
     model: PluginModel;
-    lifecycle: PluginLifecycle;
+    lifecycle: PluginLifecycle; // todo maybe PluginMetadata should be usedd here?
 }
 
 export interface CommandRegistryMain {
@@ -26,6 +26,12 @@ export interface CommandRegistryMain {
     $unregisterCommand(id: string): void;
     $executeCommand<T>(id: string, args: any[]): PromiseLike<T | undefined>;
     $getCommands(): PromiseLike<string[]>;
+}
+
+export interface TerminalManagerExt {
+    $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): theia.Terminal;
+    $createTerminal(options: theia.TerminalOptions): theia.Terminal;
+    // $onDidCloseTerminal: theia.Event<theia.Terminal>;
 }
 
 export interface CommandRegistryExt {
@@ -70,11 +76,13 @@ export interface QuickOpenMain {
 
 export const PLUGIN_RPC_CONTEXT = {
     COMMAND_REGISTRY_MAIN: <ProxyIdentifier<CommandRegistryMain>>createProxyIdentifier<CommandRegistryMain>('CommandRegistryMain'),
-    QUICK_OPEN_MAIN: createProxyIdentifier<QuickOpenMain>('QuickOpenMain')
+    QUICK_OPEN_MAIN: createProxyIdentifier<QuickOpenMain>('QuickOpenMain'),
+    TERMINAL_MANAGER_EXT: createProxyIdentifier<TerminalManagerExt>("TerminalManagerExt")
 };
 
 export const MAIN_RPC_CONTEXT = {
     HOSTED_PLUGIN_MANAGER_EXT: createProxyIdentifier<HostedPluginManagerExt>('HostedPluginManagerExt'),
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
-    QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt')
+    QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
+    TERMINAL_MANAGER_EXT: createProxyIdentifier<TerminalManagerExt>("TerminalManagerExt")
 };

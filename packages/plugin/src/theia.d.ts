@@ -185,6 +185,35 @@ declare module '@theia/plugin' {
         validateInput?(value: string): string | undefined | null | PromiseLike<string | undefined | null>;
     }
 
+
+    // todo docs
+    export interface Terminal {
+        readonly name: string;
+
+        readonly processId: Thenable<number>;
+
+        sendText(text: string, addNewLine?: boolean): void;
+
+        show(preserveFocus?: boolean): void;
+
+        hide(): void;
+
+        dispose(): void;
+    }
+
+    export interface TerminalOptions {
+
+		name?: string;
+
+		shellPath?: string;
+
+        shellArgs?: string[];
+
+		cwd?: string;
+
+		env?: { [key: string]: string | null };
+	}
+
     /**
 	 * Namespace for dealing with commands. In short, a command is a function with a
 	 * unique identifier. The function is sometimes also called _command handler_.
@@ -273,6 +302,8 @@ declare module '@theia/plugin' {
          */
         export function showQuickPick<T extends QuickPickItem>(items: T[] | PromiseLike<T[]>, options: QuickPickOptions & { canPickMany: true }, token?: CancellationToken): PromiseLike<T[] | undefined>;
 
-
+        export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
+        // export const onDidCloseTerminal: Event<Terminal>;
+        export function createTerminal(options: TerminalOptions): Terminal;
     }
 }
