@@ -13,11 +13,12 @@ import { MAIN_RPC_CONTEXT, Plugin } from '../api/plugin-api';
 import { RPCProtocol } from '../api/rpc-protocol';
 import { getPluginId } from '../common/plugin-protocol';
 import { Disposable } from './types-impl';
+import { TerminalExtImpl } from './terminal-ext';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
     const quickOpenExt = rpc.set(MAIN_RPC_CONTEXT.QUICK_OPEN_EXT, new QuickOpenExtImpl(rpc));
-    // const terminalExt = rpc.set(MAIN_RPC_CONTEXT.TERMINAL_MANAGER_EXT, new )
+    const terminalExt = rpc.set(MAIN_RPC_CONTEXT.TERMINAL_EXT, new TerminalExtImpl(rpc));
 
     const commands: typeof theia.commands = {
         registerCommand(command: theia.Command, handler?: <T>(...args: any[]) => T | Thenable<T>): Disposable {
@@ -40,7 +41,8 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         },
 
         createTerminal(nameOrOptions: theia.TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): theia.Terminal {
-            return new Timp();
+            console.log("Let's create new terminal widget!!!!");
+            return terminalExt.$createTerminal({name: "New Terminal"});
         },
     };
 
@@ -53,19 +55,6 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         CancellationTokenSource: CancellationTokenSource
     };
 
-}
-
-export class Timp implements theia.Terminal {
-    name = "";
-    readonly processId: Thenable<number>;
-
-    sendText(text: string, addNewLine?: boolean): void {}
-
-    show(preserveFocus?: boolean): void {}
-
-    hide(): void {}
-
-    dispose(): void {}
 }
 
 export function startPlugin(plugin: Plugin, pluginMain: any, plugins: Map<string, () => void>): void {

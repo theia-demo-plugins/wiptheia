@@ -28,14 +28,32 @@ export interface CommandRegistryMain {
     $getCommands(): PromiseLike<string[]>;
 }
 
-export interface TerminalManagerExt {
+export interface CommandRegistryExt {
+    $executeCommand<T>(id: string, ...ars: any[]): PromiseLike<T>;
+}
+
+export interface TerminalExt {
     $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): theia.Terminal;
     $createTerminal(options: theia.TerminalOptions): theia.Terminal;
     // $onDidCloseTerminal: theia.Event<theia.Terminal>;
 }
 
-export interface CommandRegistryExt {
-    $executeCommand<T>(id: string, ...ars: any[]): PromiseLike<T>;
+export interface TerminalMain {
+    $createTerminal(options: theia.TerminalOptions): theia.Terminal;
+    // $onDidCloseTerminal: theia.Event<theia.Terminal>;
+}
+
+export class TempTermStub implements theia.Terminal {
+    name = "";
+    readonly processId: Thenable<number>;
+
+    sendText(text: string, addNewLine?: boolean): void {}
+
+    show(preserveFocus?: boolean): void {}
+
+    hide(): void {}
+
+    dispose(): void {}
 }
 
 export interface AutoFocus {
@@ -77,12 +95,12 @@ export interface QuickOpenMain {
 export const PLUGIN_RPC_CONTEXT = {
     COMMAND_REGISTRY_MAIN: <ProxyIdentifier<CommandRegistryMain>>createProxyIdentifier<CommandRegistryMain>('CommandRegistryMain'),
     QUICK_OPEN_MAIN: createProxyIdentifier<QuickOpenMain>('QuickOpenMain'),
-    TERMINAL_MANAGER_EXT: createProxyIdentifier<TerminalManagerExt>("TerminalManagerExt")
+    TERMINAL_MAIN: createProxyIdentifier<TerminalMain>("TerminalMain")
 };
 
 export const MAIN_RPC_CONTEXT = {
     HOSTED_PLUGIN_MANAGER_EXT: createProxyIdentifier<HostedPluginManagerExt>('HostedPluginManagerExt'),
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
     QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
-    TERMINAL_MANAGER_EXT: createProxyIdentifier<TerminalManagerExt>("TerminalManagerExt")
+    TERMINAL_EXT: createProxyIdentifier<TerminalExt>("TerminalExt")
 };
