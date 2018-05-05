@@ -16,6 +16,7 @@ import { IBaseTerminalServer } from '../common/base-terminal-protocol';
 import { TerminalWatcher } from '../common/terminal-watcher';
 import { ThemeService } from "@theia/core/lib/browser/theming";
 import { Deferred } from "@theia/core/lib/common/promise-util";
+import { TerminalWidget } from '@theia/core/lib/browser/terminal/terminal-model';
 
 Xterm.Terminal.applyAddon(require('xterm/lib/addons/fit/fit'));
 
@@ -52,7 +53,7 @@ interface TerminalCSSProperties {
 }
 
 @injectable()
-export class TerminalWidget extends BaseWidget implements StatefulWidget {
+export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, StatefulWidget {
 
     private terminalId: number | undefined;
     private term: Xterm.Terminal;

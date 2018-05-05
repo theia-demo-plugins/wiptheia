@@ -9,7 +9,7 @@ import { CommandRegistryMainImpl } from './command-registry-main';
 import { QuickOpenMainImpl } from './quick-open-main';
 import { RPCProtocol } from '../../api/rpc-protocol';
 import { PLUGIN_RPC_CONTEXT } from '../../api/plugin-api';
-import { TerminalMainImpl } from './terminal-main';
+import { TerminalServiceMainImpl } from './terminal-main';
 
 export function setUpPluginApi(rpc: RPCProtocol, container: interfaces.Container): void {
     const commandRegistryMain = new CommandRegistryMainImpl(rpc, container);
@@ -18,6 +18,6 @@ export function setUpPluginApi(rpc: RPCProtocol, container: interfaces.Container
     const quickOpenMain = new QuickOpenMainImpl(rpc, container);
     rpc.set(PLUGIN_RPC_CONTEXT.QUICK_OPEN_MAIN, quickOpenMain);
 
-    const terminalMain = new TerminalMainImpl(container);
+    const terminalMain = new TerminalServiceMainImpl(container);
     rpc.set(PLUGIN_RPC_CONTEXT.TERMINAL_MAIN, terminalMain);
 }

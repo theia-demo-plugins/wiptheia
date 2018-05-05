@@ -5,12 +5,12 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 import { Terminal, TerminalOptions } from "@theia/plugin";
-import { TerminalExt, TerminalMain, PLUGIN_RPC_CONTEXT } from "../api/plugin-api";
+import { TerminalServiceExt, TerminalServiceMain, PLUGIN_RPC_CONTEXT } from "../api/plugin-api";
 import { RPCProtocol } from "../api/rpc-protocol";
 
-export class TerminalExtImpl implements TerminalExt {
+export class TerminalServiceExtImpl implements TerminalServiceExt {
 
-    private readonly proxy: TerminalMain;
+    private readonly proxy: TerminalServiceMain;
 
     constructor(rpc: RPCProtocol) {
         this.proxy = rpc.getProxy(PLUGIN_RPC_CONTEXT.TERMINAL_MAIN);
@@ -18,9 +18,14 @@ export class TerminalExtImpl implements TerminalExt {
 
     $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
     $createTerminal(options: TerminalOptions): Terminal;
-
     $createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]) {
-        // todo handle argument type.
-        return this.proxy.$createTerminal(nameOrOptions as TerminalOptions);
+        return this.createTerminal(nameOrOptions, shellPath, shellArgs);
+    }
+
+    createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]) {
+        if (typeof nameOrOptions === 'object') {
+            return this.proxy.$createTerminal(nameOrOptions);
+        }
+        return this.proxy.$createTerminal(nameOrOptions, shellPath, shellArgs);
     }
 }

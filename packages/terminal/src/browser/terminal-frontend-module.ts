@@ -9,7 +9,8 @@ import { ContainerModule, Container } from 'inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
 import { KeybindingContribution, WebSocketConnectionProvider, WidgetFactory, KeybindingContext } from '@theia/core/lib/browser';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
-import { TerminalWidget, TerminalWidgetOptions, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget';
+import { TerminalWidgetImpl, TerminalWidgetOptions, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget';
+import { TerminalWidget } from '@theia/core/lib/browser/terminal/terminal-model';
 import { ITerminalServer, terminalPath } from '../common/terminal-protocol';
 import { TerminalWatcher } from '../common/terminal-watcher';
 import { IShellTerminalServer, shellTerminalPath, ShellTerminalServerProxy } from '../common/shell-terminal-protocol';
@@ -22,7 +23,7 @@ import 'xterm/lib/xterm.css';
 export default new ContainerModule(bind => {
     bind(KeybindingContext).to(TerminalActiveContext).inSingletonScope();
 
-    bind(TerminalWidget).toSelf().inTransientScope();
+    bind(TerminalWidget).to(TerminalWidgetImpl).inTransientScope();
     bind(TerminalWatcher).toSelf().inSingletonScope();
 
     let terminalNum = 0;
@@ -39,7 +40,7 @@ export default new ContainerModule(bind => {
                 destroyTermOnClose: true,
                 ...options
             });
-            return child.get(TerminalWidget);
+            return child.get(TerminalWidgetImpl);
         }
     }));
 

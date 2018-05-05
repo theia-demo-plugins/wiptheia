@@ -6,25 +6,66 @@
  */
 
 import { TerminalOptions, Terminal } from "@theia/plugin";
-import { TerminalMain, TempTermStub } from "../../api/plugin-api";
-import { TerminalFrontendContribution } from "@theia/terminal/lib/browser/terminal-frontend-contribution.js";
-// import { RPCProtocol } from "../../api/rpc-protocol";
+import { TerminalServiceMain, TerminalMain, } from "../../api/plugin-api";
 import { interfaces } from "inversify";
+import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
 
-export class TerminalMainImpl implements TerminalMain {
+export class TerminalServiceMainImpl implements TerminalServiceMain {
 
-    private readonly terminalFrontentContribution: TerminalFrontendContribution;
+    private readonly terminalService: TerminalService;
 
-    constructor(container: interfaces.Container
-        // private readonly rpc: RPCProtocol
-    ) {
-        this.terminalFrontentContribution = container.get(TerminalFrontendContribution);
+    constructor(container: interfaces.Container) {
+        this.terminalService = container.get(TerminalService);
     }
 
-    // $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
-    // $createTerminal(options: TerminalOptions): Terminal;
-    $createTerminal(nameOrOption?: TerminalOptions, shellPath?: string, shellArgs?: string): Terminal {
-        this.terminalFrontentContribution.newTerminal();
-        return new TempTermStub();
+    $createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): Terminal {
+        if (typeof nameOrOptions === "object") {
+            return new TerminalMainImpl(nameOrOptions, this.terminalService);
+        }
+        const options = {
+            name: nameOrOptions,
+            shellPath: shellPath,
+            shellArgs: shellArgs
+        }
+        return new TerminalMainImpl(options, this.terminalService);
+    }
+}
+
+export class TerminalMainImpl implements TerminalMain, Terminal {
+
+    // name: string;
+    // processId: Thenable<number>;
+
+    constructor(private readonly options: TerminalOptions, private readonly terminalService: TerminalService) {
+
+    }
+
+    sendText(text: string, addNewLine?: boolean | undefined): void {
+        throw new Error("Method not implemented.");
+    }
+    show(preserveFocus?: boolean | undefined): void {
+        this.$show(preserveFocus);
+    }
+    hide(): void {
+        throw new Error("Method not implemented.");
+    }
+    dispose(): void {
+        throw new Error("Method not implemented.");
+    }
+
+    $show(preserveFocus?: boolean | undefined): void {
+        const termWidget = this.terminalService.newTerminal(this.options);
+    }
+
+    $sendText(text: string, addNewLine?: boolean | undefined): void {
+        throw new Error("Method not implemented.");
+    }
+
+    $hide(): void {
+        throw new Error("Method not implemented.");
+    }
+
+    $dispose(): void {
+        throw new Error("Method not implemented.");
     }
 }

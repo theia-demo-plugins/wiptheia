@@ -13,12 +13,12 @@ import { MAIN_RPC_CONTEXT, Plugin } from '../api/plugin-api';
 import { RPCProtocol } from '../api/rpc-protocol';
 import { getPluginId } from '../common/plugin-protocol';
 import { Disposable } from './types-impl';
-import { TerminalExtImpl } from './terminal-ext';
+import { TerminalServiceExtImpl } from './terminal-ext';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
     const quickOpenExt = rpc.set(MAIN_RPC_CONTEXT.QUICK_OPEN_EXT, new QuickOpenExtImpl(rpc));
-    const terminalExt = rpc.set(MAIN_RPC_CONTEXT.TERMINAL_EXT, new TerminalExtImpl(rpc));
+    const terminalExt = new TerminalServiceExtImpl(rpc);
 
     const commands: typeof theia.commands = {
         registerCommand(command: theia.Command, handler?: <T>(...args: any[]) => T | Thenable<T>): Disposable {
@@ -41,8 +41,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         },
 
         createTerminal(nameOrOptions: theia.TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): theia.Terminal {
-            console.log("Let's create new terminal widget!!!!");
-            return terminalExt.$createTerminal({name: "New Terminal"});
+            return terminalExt.createTerminal(nameOrOptions, shellPath, shellArgs);
         },
     };
 
