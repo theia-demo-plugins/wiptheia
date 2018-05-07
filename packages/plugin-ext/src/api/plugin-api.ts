@@ -41,15 +41,6 @@ export interface TerminalMain {
     $dispose(): void;
 }
 
-export interface TerminalExt {
-    readonly name: string;
-    readonly processId: Thenable<number>;
-    sendText(text: string, addNewLine?: boolean): void;
-    show(preserveFocus?: boolean): void;
-    hide(): void;
-    dispose(): void;
-}
-
 export interface TerminalServiceExt {
     $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): theia.Terminal;
     $createTerminal(options: theia.TerminalOptions): theia.Terminal;
@@ -57,8 +48,8 @@ export interface TerminalServiceExt {
 }
 
 export interface TerminalServiceMain {
-    $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): theia.Terminal;
-    $createTerminal(options: theia.TerminalOptions): theia.Terminal;
+    $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): TerminalMain;
+    $createTerminal(options: theia.TerminalOptions): TerminalMain;
     // $onDidCloseTerminal: theia.Event<theia.Terminal>;
 }
 

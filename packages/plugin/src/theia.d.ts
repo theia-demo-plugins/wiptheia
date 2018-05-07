@@ -303,7 +303,7 @@ declare module '@theia/plugin' {
         export function showQuickPick<T extends QuickPickItem>(items: T[] | PromiseLike<T[]>, options: QuickPickOptions & { canPickMany: true }, token?: CancellationToken): PromiseLike<T[] | undefined>;
 
         export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
-        export const onDidCloseTerminal: Event<Terminal>;
+        // export const onDidCloseTerminal: Event<Terminal>;
         export function createTerminal(options: TerminalOptions): Terminal;
     }
 }

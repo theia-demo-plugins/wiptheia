@@ -345,7 +345,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         this.webSocketConnectionProvider.listen({
             path: `${terminalsPath}/${this.terminalId}`,
             onConnection: connection => {
-                connection.onNotification('onData', (data: string) => this.term.write(data));
+                connection.onNotification('onData', (data: string) => this.sendText(data));
 
                 const sendData = (data?: string) => data && connection.sendRequest('write', data);
                 this.term.on('data', sendData);
@@ -359,6 +359,14 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     protected async reconnectTerminalProcess(): Promise<void> {
         if (typeof this.terminalId === "number") {
             await this.start(this.terminalId);
+        }
+    }
+
+    sendText(text: string, addNewLine?: boolean): void {
+        if (addNewLine) {
+            this.term.writeln(text);
+        } else {
+            this.term.write(text);
         }
     }
 

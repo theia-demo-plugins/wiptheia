@@ -5,10 +5,12 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { TerminalOptions, Terminal } from "@theia/plugin";
+import { TerminalOptions } from "@theia/plugin";
 import { TerminalServiceMain, TerminalMain, } from "../../api/plugin-api";
 import { interfaces } from "inversify";
 import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
+import { TerminalWidget } from "@theia/core/lib/browser/terminal/terminal-model";
+import { Deferred } from "@theia/core/lib/common/promise-util";
 
 export class TerminalServiceMainImpl implements TerminalServiceMain {
 
@@ -18,7 +20,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
         this.terminalService = container.get(TerminalService);
     }
 
-    $createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): Terminal {
+    $createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): TerminalMain {
         if (typeof nameOrOptions === "object") {
             return new TerminalMainImpl(nameOrOptions, this.terminalService);
         }
@@ -26,39 +28,32 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
             name: nameOrOptions,
             shellPath: shellPath,
             shellArgs: shellArgs
-        }
+        };
         return new TerminalMainImpl(options, this.terminalService);
     }
 }
 
-export class TerminalMainImpl implements TerminalMain, Terminal {
+export class TerminalMainImpl implements TerminalMain {
 
-    // name: string;
-    // processId: Thenable<number>;
+    private readonly waitForCreateTerminal = new Deferred<TerminalWidget>();
 
     constructor(private readonly options: TerminalOptions, private readonly terminalService: TerminalService) {
-
     }
 
-    sendText(text: string, addNewLine?: boolean | undefined): void {
-        throw new Error("Method not implemented.");
-    }
-    show(preserveFocus?: boolean | undefined): void {
-        this.$show(preserveFocus);
-    }
-    hide(): void {
-        throw new Error("Method not implemented.");
-    }
-    dispose(): void {
-        throw new Error("Method not implemented.");
+    create(): void {
+        this.terminalService.newTerminal(this.options).then(termWidget => {
+            this.waitForCreateTerminal.resolve();
+        });
     }
 
     $show(preserveFocus?: boolean | undefined): void {
-        const termWidget = this.terminalService.newTerminal(this.options);
+        throw new Error("Method not implemented.");
     }
 
     $sendText(text: string, addNewLine?: boolean | undefined): void {
-        throw new Error("Method not implemented.");
+        this.waitForCreateTerminal.promise.then(widget => {
+            widget.sendText(text, addNewLine);
+        });
     }
 
     $hide(): void {
@@ -66,6 +61,8 @@ export class TerminalMainImpl implements TerminalMain, Terminal {
     }
 
     $dispose(): void {
-        throw new Error("Method not implemented.");
+        this.waitForCreateTerminal.promise.then(widget => {
+            widget.dispose();
+        });
     }
 }
