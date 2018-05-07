@@ -51,9 +51,28 @@ theia.window.showQuickPick(["foo", "bar", "foobar"], option).then((val: string[]
         console.log(`Quick Pick Selected: ${val}`);
     });
 ```
-### Terminal 
+#### Notification API
+ A notification shows an information message to users.
+ Optionally provide an array of items which will be presented as clickable buttons.
 
-Function to create new terminal with specified arguments: 
+ Notifications can be shown using the [showInformationMessage](#window.showInformationMessage),
+ [showWarningMessage](#window.showWarningMessage) and [showErrorMessage](#window.showErrorMessage) functions.
+
+
+Simple example that show an information message:
+```javascript
+theia.window.showInformationMessage('Information message');
+```
+
+Simple example that show an information message with buttons:
+```javascript
+theia.window.showInformationMessage('Information message', 'Btn1', 'Btn2').then(result => {
+    console.log("Click button", result);
+});
+```
+### Terminal
+
+Function to create new terminal with specified arguments:
 
     theia.window.createTerminal("Bash terminal", "/bin/bash", shellArgs: ["-l"]);
 
@@ -63,7 +82,7 @@ You can create terminal with specified options:
 		name: "Bash terminal",
 		shellPath: "/bin/bash";
         shellArgs: ["-l"];
-		cwd: "/projects"; 
+		cwd: "/projects";
 		env: { "TERM": "screen" };
 	};
 
