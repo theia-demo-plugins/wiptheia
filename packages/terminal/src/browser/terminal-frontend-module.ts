@@ -40,7 +40,7 @@ export default new ContainerModule(bind => {
                 destroyTermOnClose: true,
                 ...options
             });
-            return child.get(TerminalWidgetImpl);
+            return child.get(TerminalWidget);
         }
     }));
 
