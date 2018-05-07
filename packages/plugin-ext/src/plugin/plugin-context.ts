@@ -55,7 +55,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
                          optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
                          ...items: any[]): PromiseLike<any> {
             return messageRegistryExt.showErrorMessage(message, optionsOrFirstItem, items);
-        }
+        },
         createTerminal(nameOrOptions: theia.TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): theia.Terminal {
             return terminalExt.createTerminal(nameOrOptions, shellPath, shellArgs);
         },
