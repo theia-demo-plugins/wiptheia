@@ -86,14 +86,16 @@ jobs:
     install: skip
     before_deploy:
       - printf "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}\n" >> ~/.npmrc
-      - yarn build
       - export THEIA_HOME=$(pwd)
       - export PATH=${THEIA_HOME}/node_modules/.bin:${PATH}
-      - cd ${THEIA_HOME}/packages/plugin && find . -name "*.*" -type f -not -path "*node_modules/*" -exec sed -i 's/\@theia\/plugin/\@wiptheia\/plugin/g' {} \;
-      - cd ${THEIA_HOME}/packages/plugin && npm version -no-git-tag-version "0.3.10-$(date +%s)"
+      - export THEIA_PUBLISHED_VERSION="0.3.10-$(date +%s)"
+      - cd ${THEIA_HOME}/dev-packages/ && find . -name "*.*" -type f -not -path "*node_modules/*" -exec sed -i 's/\@theia\//\@wiptheia\//g' {} \;
+      - cd ${THEIA_HOME}/packages/ && find . -name "*.*" -type f -not -path "*node_modules/*" -exec sed -i 's/\@theia\//\@wiptheia\//g' {} \;
+      - yarn build
+      - cd ${THEIA_HOME} && for f in $(find . -name "package.json" -type f -not -path "*node_modules/*"); do cd ${THEIA_HOME}/$(dirname $f) && npm version -no-git-tag-version ${THEIA_PUBLISHED_VERSION}; done; cd ${THEIA_HOME}
     deploy:
       provider: script
-      script: cd ${THEIA_HOME}/packages/plugin && npm publish --access public
+      script: cd ${THEIA_HOME}/dev-packages && for f in $(find . -name "package.json" -type f -not -path "*node_modules/*"); do cd ${THEIA_HOME}/$(dirname $f) && npm publish --access public; done; cd ${THEIA_HOME}/packages && for f in $(find . -name "package.json" -type f -not -path "*node_modules/*"); do cd ${THEIA_HOME}/$(dirname $f) && npm publish --access public; done;
       on:
         branch: master
       skip_cleanup: true
