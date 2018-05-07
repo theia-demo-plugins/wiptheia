@@ -52,3 +52,23 @@
 #theia-statusBar .area.right .element {
     margin-left: 15px;
 }
+
+#theia-statusBar .area.left .element.warning,
+#theia-statusBar .area.right .element.warning {
+    background-color: var(--theia-warn-color0);
+}
+
+#theia-statusBar .area.left .element.error,
+#theia-statusBar .area.right .element.error {
+    background-color: var(--theia-error-color0);
+}
+
+#theia-statusBar .area.left .element.success,
+#theia-statusBar .area.right .element.success {
+    background-color: var(--theia-success-color0);
+}
+
+#theia-statusBar .area.left .element.info,
+#theia-statusBar .area.right .element.info {
+    background-color: var(--theia-info-color0);
+}

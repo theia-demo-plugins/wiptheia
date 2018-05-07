@@ -15,6 +15,7 @@ import { HostedPluginManagerClient } from "./plugin-manager-client";
 import { PluginApiFrontendContribution } from "./plugin-frontend-contribution";
 import { setUpPluginApi } from "./main-context";
 import { HostedPluginServer, hostedServicePath } from "../../common/plugin-protocol";
+import { HostedPluginInformer } from "../../hosted/browser/hosted-plugin-informer";
 
 export default new ContainerModule(bind => {
     bind(PluginWorker).toSelf().inSingletonScope();
@@ -22,18 +23,23 @@ export default new ContainerModule(bind => {
     bind(HostedPluginWatcher).toSelf().inSingletonScope();
     bind(HostedPluginManagerClient).toSelf().inSingletonScope();
 
+    bind(HostedPluginInformer).toSelf().inSingletonScope();
+
     bind(PluginApiFrontendContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toDynamicValue(c => c.container.get(PluginApiFrontendContribution));
     bind(CommandContribution).toDynamicValue(c => c.container.get(PluginApiFrontendContribution));
 
     bind(FrontendApplicationContribution).toDynamicValue(ctx => ({
         onStart(app: FrontendApplication): MaybePromise<void> {
+            ctx.container.get(HostedPluginInformer);
+
             const worker = ctx.container.get(PluginWorker);
 
             setUpPluginApi(worker.rpc, ctx.container);
             ctx.container.get(HostedPluginSupport).checkAndLoadPlugin(ctx.container);
         }
     }));
+
     bind(HostedPluginServer).toDynamicValue(ctx => {
         const connection = ctx.container.get(WebSocketConnectionProvider);
         const hostedWatcher = ctx.container.get(HostedPluginWatcher);
