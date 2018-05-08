@@ -6,63 +6,51 @@
  */
 
 import { TerminalOptions } from "@theia/plugin";
-import { TerminalServiceMain, TerminalMain, } from "../../api/plugin-api";
+import { TerminalServiceMain} from "../../api/plugin-api";
 import { interfaces } from "inversify";
 import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
 import { TerminalWidget } from "@theia/core/lib/browser/terminal/terminal-model";
-import { Deferred } from "@theia/core/lib/common/promise-util";
 
 export class TerminalServiceMainImpl implements TerminalServiceMain {
 
     private readonly terminalService: TerminalService;
+    protected readonly terminals = new Map<number, TerminalWidget>();
 
     constructor(container: interfaces.Container) {
         this.terminalService = container.get(TerminalService);
+        console.log(this.terminalService);
     }
 
-    $createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): TerminalMain {
-        if (typeof nameOrOptions === "object") {
-            return new TerminalMainImpl(nameOrOptions, this.terminalService);
+    async $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
+        const terminalWidget = await this.terminalService.newTerminal(options);
+        let id = await terminalWidget.createTerminal();
+        if (id) {
+            this.terminals.set(id, terminalWidget);
+        } else {
+            id = -1;
         }
-        const options = {
-            name: nameOrOptions,
-            shellPath: shellPath,
-            shellArgs: shellArgs
-        };
-        return new TerminalMainImpl(options, this.terminalService);
-    }
-}
-
-export class TerminalMainImpl implements TerminalMain {
-
-    private readonly waitForCreateTerminal = new Deferred<TerminalWidget>();
-
-    constructor(private readonly options: TerminalOptions, private readonly terminalService: TerminalService) {
+        return id;
     }
 
-    create(): void {
-        this.terminalService.newTerminal(this.options).then(termWidget => {
-            this.waitForCreateTerminal.resolve();
-        });
+    $sendText(id: number, text: string, addNewLine?: boolean | undefined): void {
+        const termWidget = this.terminals.get(id);
+        if (termWidget) {
+            termWidget.sendText(text, addNewLine);
+        }
     }
 
-    $show(preserveFocus?: boolean | undefined): void {
+    $show(id: number, preserveFocus?: boolean | undefined): void {
         throw new Error("Method not implemented.");
     }
 
-    $sendText(text: string, addNewLine?: boolean | undefined): void {
-        this.waitForCreateTerminal.promise.then(widget => {
-            widget.sendText(text, addNewLine);
-        });
-    }
-
-    $hide(): void {
+    $hide(id: number): void {
         throw new Error("Method not implemented.");
     }
 
-    $dispose(): void {
-        this.waitForCreateTerminal.promise.then(widget => {
-            widget.dispose();
-        });
+    $dispose(id: number): void {
+        const termWidget = this.terminals.get(id);
+        if (termWidget) {
+            termWidget.dispose();
+        }
     }
 }

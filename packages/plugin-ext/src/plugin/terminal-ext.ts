@@ -5,7 +5,7 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 import { Terminal, TerminalOptions } from "@theia/plugin";
-import { TerminalServiceExt, TerminalServiceMain, PLUGIN_RPC_CONTEXT, TerminalMain } from "../api/plugin-api";
+import { TerminalServiceExt, TerminalServiceMain, PLUGIN_RPC_CONTEXT } from "../api/plugin-api";
 import { RPCProtocol } from "../api/rpc-protocol";
 
 export class TerminalServiceExtImpl implements TerminalServiceExt {
@@ -23,26 +23,46 @@ export class TerminalServiceExtImpl implements TerminalServiceExt {
     }
 
     createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): Terminal {
-        const terminalMain = typeof nameOrOptions === 'object' ? this.proxy.$createTerminal(nameOrOptions) :
-                                                                 this.proxy.$createTerminal(nameOrOptions, shellPath, shellArgs);
-        return new TerminalImpl(terminalMain);
+        let options: TerminalOptions;
+        if (typeof nameOrOptions === "object") {
+            options = nameOrOptions;
+        } else {
+            options = {
+                name: nameOrOptions,
+                shellPath: shellPath,
+                shellArgs: shellArgs
+            };
+        }
+
+        const terminal = new TerminalExtImpl(this.proxy, options.name || "test"); // todo autogenerate terminal name if it's was not defined
+        terminal.create(options, shellPath, shellArgs);
+        return terminal;
     }
 }
 
-export class TerminalImpl implements Terminal {
+export class TerminalExtImpl implements Terminal {
 
-    constructor(private readonly terminalMain: TerminalMain) {}
+    processId: Thenable<number>;
+
+    constructor(private readonly proxy: TerminalServiceMain, readonly name: string) {}
+
+    create(nameOrOptions: TerminalOptions, shellPath?: string, shellArgs?: string[]): void {
+        this.processId = this.proxy.$createTerminal(nameOrOptions);
+    }
 
     sendText(text: string, addNewLine?: boolean | undefined): void {
-        this.terminalMain.$sendText(text, addNewLine);
+        this.processId.then(id => this.proxy.$sendText(id, text, addNewLine));
     }
+
     show(preserveFocus?: boolean | undefined): void {
-        this.terminalMain.$show();
+        this.processId.then(id => this.proxy.$show(id));
     }
+
     hide(): void {
-        this.terminalMain.$hide();
+        this.processId.then(id => this.proxy.$hide(id));
     }
+
     dispose(): void {
-        this.terminalMain.$dispose();
+        this.processId.then(id => this.proxy.$dispose(id));
     }
 }

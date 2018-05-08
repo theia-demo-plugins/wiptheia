@@ -188,9 +188,9 @@ declare module '@theia/plugin' {
 
     // todo docs
     export interface Terminal {
-        // readonly name: string;
+        readonly name: string;
 
-        // readonly processId: Thenable<number>;
+        readonly processId: Thenable<number>;
 
         sendText(text: string, addNewLine?: boolean): void;
 
@@ -212,7 +212,7 @@ declare module '@theia/plugin' {
 		cwd?: string;
 
 		env?: { [key: string]: string | null };
-	}
+    }
 
     /**
      * Namespace for dealing with commands. In short, a command is a function with a

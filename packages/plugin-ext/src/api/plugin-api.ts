@@ -17,7 +17,7 @@ export interface HostedPluginManagerExt {
 export interface Plugin {
     pluginPath: string;
     model: PluginModel;
-    lifecycle: PluginLifecycle; // todo maybe PluginMetadata should be usedd here?
+    lifecycle: PluginLifecycle;
 }
 
 export interface CommandRegistryMain {
@@ -28,17 +28,8 @@ export interface CommandRegistryMain {
     $getCommands(): PromiseLike<string[]>;
 }
 
-export interface CommandRegistryExt { // server side
+export interface CommandRegistryExt {
     $executeCommand<T>(id: string, ...ars: any[]): PromiseLike<T>;
-}
-
-export interface TerminalMain {
-    // readonly name: string;
-    // readonly processId: Thenable<number>;
-    $sendText(text: string, addNewLine?: boolean): void;
-    $show(preserveFocus?: boolean): void;
-    $hide(): void;
-    $dispose(): void;
 }
 
 export interface TerminalServiceExt {
@@ -48,8 +39,11 @@ export interface TerminalServiceExt {
 }
 
 export interface TerminalServiceMain {
-    $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): TerminalMain;
-    $createTerminal(options: theia.TerminalOptions): TerminalMain;
+    $createTerminal(options: theia.TerminalOptions): PromiseLike<number>;
+    $sendText(id: number, text: string, addNewLine?: boolean): void;
+    $show(id: number, preserveFocus?: boolean): void;
+    $hide(id: number): void;
+    $dispose(id: number): void;
     // $onDidCloseTerminal: theia.Event<theia.Terminal>;
 }
 

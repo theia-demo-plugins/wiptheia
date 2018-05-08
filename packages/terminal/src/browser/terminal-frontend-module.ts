@@ -19,6 +19,7 @@ import { createCommonBindings } from '../common/terminal-common-module';
 
 import '../../src/browser/terminal.css';
 import 'xterm/lib/xterm.css';
+import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
 
 export default new ContainerModule(bind => {
     bind(KeybindingContext).to(TerminalActiveContext).inSingletonScope();
@@ -45,6 +46,7 @@ export default new ContainerModule(bind => {
     }));
 
     bind(TerminalFrontendContribution).toSelf().inSingletonScope();
+    bind(TerminalService).to(TerminalFrontendContribution).inSingletonScope();
     for (const identifier of [CommandContribution, MenuContribution, KeybindingContribution]) {
         bind(identifier).toService(TerminalFrontendContribution);
     }

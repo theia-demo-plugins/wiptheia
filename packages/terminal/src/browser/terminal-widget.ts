@@ -253,7 +253,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         this.logger.error(`Error attaching to terminal id ${id}, the terminal is most likely gone. Starting up a new terminal instead.`);
         return this.createTerminal();
     }
-    protected async createTerminal(): Promise<number | undefined> {
+    public async createTerminal(): Promise<number | undefined> {
         const root = await this.workspaceService.root;
         const rootURI = root && root.uri;
         const { cols, rows } = this;

@@ -26,6 +26,7 @@ export interface TerminalOptions {
 
 export const TerminalWidget = Symbol("TerminalWidget");
 export interface TerminalWidget {
+    createTerminal(): Promise<number | undefined>;
     start(id?: number): Promise<void>;
     sendText(text: string, addNewLine?: boolean): void;
     dispose(): void;
