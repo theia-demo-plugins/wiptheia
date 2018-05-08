@@ -9,4 +9,6 @@ import { TerminalOptions, TerminalWidget } from "./terminal-model";
 export const TerminalService = Symbol("TerminalService");
 export interface TerminalService {
     newTerminal(options: TerminalOptions): Promise<TerminalWidget>;
+    activateWidget(termWidget: TerminalWidget): void;
+    collapseWidget(termWidget: TerminalWidget): void;
 }

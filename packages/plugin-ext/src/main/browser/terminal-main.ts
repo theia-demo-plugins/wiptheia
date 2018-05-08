@@ -40,11 +40,17 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
     }
 
     $show(id: number, preserveFocus?: boolean | undefined): void {
-        throw new Error("Method not implemented.");
+        const termWidget = this.terminals.get(id);
+        if (termWidget) {
+            this.terminalService.activateWidget(termWidget);
+        }
     }
 
     $hide(id: number): void {
-        throw new Error("Method not implemented.");
+        const termWidget = this.terminals.get(id);
+        if (termWidget) {
+            this.terminalService.collapseWidget(termWidget);
+        }
     }
 
     $dispose(id: number): void {

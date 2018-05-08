@@ -16,7 +16,7 @@ import {
 } from '@theia/core/lib/common';
 import {
     CommonMenus, ApplicationShell, KeybindingContribution, KeyCode, Key,
-    KeyModifier, KeybindingRegistry
+    KeyModifier, KeybindingRegistry, Widget
 } from '@theia/core/lib/browser';
 import { WidgetManager } from '@theia/core/lib/browser';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
@@ -45,7 +45,10 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
         commands.registerCommand(TerminalCommands.NEW);
         commands.registerHandler(TerminalCommands.NEW.id, {
             isEnabled: () => true,
-            execute: () => this.newTerminal({})
+            execute: () => {
+                const newTermPromise = this.newTerminal({});
+                newTermPromise.then(term => this.activateWidget(term));
+            }
         });
     }
 
@@ -146,14 +149,22 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
         }
     }
 
-    public async newTerminal(options: TerminalOptions): Promise<TerminalWidget> {
+    public async newTerminal(options: TerminalOptions): Promise<TerminalWidget & Widget> {
         const widget = <TerminalWidgetImpl>await this.widgetManager.getOrCreateWidget(TERMINAL_WIDGET_FACTORY_ID, <TerminalWidgetFactoryOptions>{
             created: new Date().toString()
         });
-        this.shell.addWidget(widget, { area: 'bottom' });
-        this.shell.activateWidget(widget.id);
         widget.start();
         return widget;
     }
 
+    public activateWidget(widget: TerminalWidget & Widget): void {
+        this.shell.addWidget(widget, { area: 'bottom' });
+        this.shell.activateWidget(widget.id);
+    }
+
+    public collapseWidget(termWidget: TerminalWidget & Widget): void {
+        if (termWidget.isVisible) {
+            this.shell.collapsePanel('bottom');
+        }
+    }
 }
