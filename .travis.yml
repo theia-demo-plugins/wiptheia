@@ -94,9 +94,10 @@ jobs:
     install: skip
     before_deploy:
       - printf "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}\n" >> ~/.npmrc
-      - export THEIA_PUBLISHED_VERSION="0.3.10-$(date +%s)"
+      - export THEIA_PUBLISHED_VERSION="0.3.10$(date +%s)"
       - yarn build
       - cd ${THEIA_HOME} && for f in $(find . -name "package.json" -type f -not -path "*node_modules/*"); do cd ${THEIA_HOME}/$(dirname $f) && npm version -no-git-tag-version ${THEIA_PUBLISHED_VERSION}; done; cd ${THEIA_HOME}
+      - cd ${THEIA_HOME}/ && find . -name "package.json" -type f -not -path "*node_modules/*" -exec sed -i "s/\^0.3.10/\^${THEIA_PUBLISHED_VERSION}/g" {} \;
     deploy:
       provider: script
       script: bash ${THEIA_HOME}/scripts/publish-theia.sh ${THEIA_HOME}
