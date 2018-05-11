@@ -12,6 +12,7 @@ export class PluginDeployerDirectoryHandlerContextImpl implements PluginDeployer
     constructor(private readonly pluginDeployerEntry: PluginDeployerEntry) {
 
     }
+
     pluginEntry(): PluginDeployerEntry {
         return this.pluginDeployerEntry;
     }

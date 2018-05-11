@@ -7,7 +7,6 @@
 
 import { injectable, inject } from "inversify";
 import { MessageService } from "@theia/core";
-import { FrontendApplication } from '@theia/core/lib/browser';
 import { AbstractViewContribution } from '@theia/core/lib/browser/shell/view-contribution';
 import { PluginWidget } from "./plugin-ext-widget";
 
@@ -28,10 +27,6 @@ export class PluginFrontendViewContribution extends AbstractViewContribution<Plu
             },
             toggleCommandId: 'pluginsView:toggle',
         });
-    }
-
-    onStart(app: FrontendApplication) {
-
     }
 
 }
