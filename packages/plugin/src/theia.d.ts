@@ -449,7 +449,7 @@ declare module '@theia/plugin' {
         export function showErrorMessage<T extends MessageItem>(message: string, options: MessageOptions, ...items: T[]): PromiseLike<T | undefined>;
 
         export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
-        // export const onDidCloseTerminal: Event<Terminal>;
+        export const onDidCloseTerminal: Event<Terminal>;
         export function createTerminal(options: TerminalOptions): Terminal;
     }
 }

@@ -10,16 +10,14 @@ import { RPCProtocol } from "../api/rpc-protocol";
 import {
     Emitter,
     // Disposable
-    // Event
+    Event
  } from "@theia/core/lib/common/event";
 
 export class TerminalServiceExtImpl implements TerminalServiceExt {
 
     private readonly proxy: TerminalServiceMain;
-    private readonly onDidCloseTerminal: EventEmitter<Terminal> = new Emitter<Terminal>();
-    // private readonly terminals: Map<number, Terminal> = new Map();
-
-    // public get onDidCloseTerminal(): Event<Terminal> { return this._onDidCloseTerminal && this._onDidCloseTerminal.event; }
+    private readonly _onDidCloseTerminal: EventEmitter<Terminal> = new Emitter<Terminal>();
+    private readonly terminals: Map<number, Terminal> = new Map();
 
     constructor(rpc: RPCProtocol) {
         this.proxy = rpc.getProxy(PLUGIN_RPC_CONTEXT.TERMINAL_MAIN);
@@ -41,18 +39,26 @@ export class TerminalServiceExtImpl implements TerminalServiceExt {
 
         const terminal = new TerminalExtImpl(this.proxy, options.name || "test"); // todo autogenerate terminal name if it's was not defined
         terminal.create(options, shellPath, shellArgs);
-        // terminal.processId.then(id => {
-        //     this.terminals.set(id, terminal);
-        // });
+        terminal.processId.then(id => {
+            this.terminals.set(id, terminal);
+        });
         return terminal;
     }
 
     $terminalClosed(id: number): void {
         console.log("terminal closed !!!");
-        // const terminal = this.terminals.get(id);
-        // if (terminal) {
-        //     this._onDidCloseTerminal.fire(terminal);
-        // }
+        const terminal = this.terminals.get(id);
+        if (terminal) {
+            this._onDidCloseTerminal.fire(terminal);
+        }
+    }
+
+    public set onDidCloseTerminal(event: Event<Terminal>) {
+        this._onDidCloseTerminal.event = event;
+    }
+
+    public get onDidCloseTerminal(): Event<Terminal> {
+        return this._onDidCloseTerminal && this._onDidCloseTerminal.event;
     }
 }
 
