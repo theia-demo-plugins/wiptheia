@@ -59,6 +59,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         createTerminal(nameOrOptions: theia.TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): theia.Terminal {
             return terminalExt.createTerminal(nameOrOptions, shellPath, shellArgs);
         },
+        // todo
     };
 
     return <typeof theia>{

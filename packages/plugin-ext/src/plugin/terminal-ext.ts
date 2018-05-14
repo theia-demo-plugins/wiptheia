@@ -4,22 +4,27 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
-import { Terminal, TerminalOptions } from "@theia/plugin";
+import { EventEmitter, Terminal, TerminalOptions } from "@theia/plugin";
 import { TerminalServiceExt, TerminalServiceMain, PLUGIN_RPC_CONTEXT } from "../api/plugin-api";
 import { RPCProtocol } from "../api/rpc-protocol";
+import {
+    Emitter,
+    // Disposable
+    // Event
+ } from "@theia/core/lib/common/event";
 
 export class TerminalServiceExtImpl implements TerminalServiceExt {
 
     private readonly proxy: TerminalServiceMain;
+    private readonly onDidCloseTerminal: EventEmitter<Terminal> = new Emitter<Terminal>();
+    // private readonly terminals: Map<number, Terminal> = new Map();
+
+    // public get onDidCloseTerminal(): Event<Terminal> { return this._onDidCloseTerminal && this._onDidCloseTerminal.event; }
 
     constructor(rpc: RPCProtocol) {
         this.proxy = rpc.getProxy(PLUGIN_RPC_CONTEXT.TERMINAL_MAIN);
-    }
-
-    $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal; // todo do we need $ here?
-    $createTerminal(options: TerminalOptions): Terminal;
-    $createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): Terminal {
-        return this.createTerminal(nameOrOptions, shellPath, shellArgs);
+        console.log("create terminal ext service");
+        console.log(this.onDidCloseTerminal);
     }
 
     createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): Terminal {
@@ -36,33 +41,48 @@ export class TerminalServiceExtImpl implements TerminalServiceExt {
 
         const terminal = new TerminalExtImpl(this.proxy, options.name || "test"); // todo autogenerate terminal name if it's was not defined
         terminal.create(options, shellPath, shellArgs);
+        // terminal.processId.then(id => {
+        //     this.terminals.set(id, terminal);
+        // });
         return terminal;
+    }
+
+    $terminalClosed(id: number): void {
+        console.log("terminal closed !!!");
+        // const terminal = this.terminals.get(id);
+        // if (terminal) {
+        //     this._onDidCloseTerminal.fire(terminal);
+        // }
     }
 }
 
 export class TerminalExtImpl implements Terminal {
 
-    processId: Thenable<number>;
+    _processId: Thenable<number>;
 
-    constructor(private readonly proxy: TerminalServiceMain, readonly name: string) {}
+    constructor(private readonly proxy: TerminalServiceMain, readonly name: string) { }
 
     create(nameOrOptions: TerminalOptions, shellPath?: string, shellArgs?: string[]): void {
-        this.processId = this.proxy.$createTerminal(nameOrOptions);
+        this._processId = this.proxy.$createTerminal(nameOrOptions);
     }
 
     sendText(text: string, addNewLine?: boolean | undefined): void {
-        this.processId.then(id => this.proxy.$sendText(id, text, addNewLine));
+        this._processId.then(id => this.proxy.$sendText(id, text, addNewLine));
     }
 
     show(preserveFocus?: boolean | undefined): void {
-        this.processId.then(id => this.proxy.$show(id));
+        this._processId.then(id => this.proxy.$show(id));
     }
 
     hide(): void {
-        this.processId.then(id => this.proxy.$hide(id));
+        this._processId.then(id => this.proxy.$hide(id));
     }
 
     dispose(): void {
-        this.processId.then(id => this.proxy.$dispose(id));
+        this._processId.then(id => this.proxy.$dispose(id));
+    }
+
+    public get processId(): Thenable<number> {
+        return this._processId;
     }
 }

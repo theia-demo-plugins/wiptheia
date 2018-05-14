@@ -33,9 +33,7 @@ export interface CommandRegistryExt {
 }
 
 export interface TerminalServiceExt {
-    $createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): theia.Terminal;
-    $createTerminal(options: theia.TerminalOptions): theia.Terminal;
-    // onDidCloseTerminal: theia.Event<theia.Terminal>;
+    $terminalClosed(id: number): void;
 }
 
 export interface TerminalServiceMain {
@@ -44,7 +42,6 @@ export interface TerminalServiceMain {
     $show(id: number, preserveFocus?: boolean): void;
     $hide(id: number): void;
     $dispose(id: number): void;
-    // $onDidCloseTerminal: theia.Event<theia.Terminal>;
 }
 
 export interface AutoFocus {
@@ -73,15 +70,15 @@ export interface PickOpenItem {
 }
 
 export interface MessageRegistryMain {
-    $showInformationMessage (message: string,
-                             optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
-                             items: string[] | theia.MessageItem[]): PromiseLike<string | theia.MessageItem | undefined>;
-    $showWarningMessage (message: string,
-                         optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
-                         items: string[] | theia.MessageItem[]): PromiseLike<string | theia.MessageItem | undefined>;
-    $showErrorMessage (message: string,
-                       optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
-                       items: string[] | theia.MessageItem[]): PromiseLike<string | theia.MessageItem | undefined>;
+    $showInformationMessage(message: string,
+        optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
+        items: string[] | theia.MessageItem[]): PromiseLike<string | theia.MessageItem | undefined>;
+    $showWarningMessage(message: string,
+        optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
+        items: string[] | theia.MessageItem[]): PromiseLike<string | theia.MessageItem | undefined>;
+    $showErrorMessage(message: string,
+        optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
+        items: string[] | theia.MessageItem[]): PromiseLike<string | theia.MessageItem | undefined>;
 }
 export interface QuickOpenExt {
     $onItemSelected(handle: number): void;
@@ -105,5 +102,6 @@ export const PLUGIN_RPC_CONTEXT = {
 export const MAIN_RPC_CONTEXT = {
     HOSTED_PLUGIN_MANAGER_EXT: createProxyIdentifier<HostedPluginManagerExt>('HostedPluginManagerExt'),
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
-    QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt')
+    QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
+    // TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt")
 };

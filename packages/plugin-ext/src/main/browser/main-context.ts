@@ -22,6 +22,6 @@ export function setUpPluginApi(rpc: RPCProtocol, container: interfaces.Container
     const messageRegistryMain = new MessageRegistryMainImpl(container);
     rpc.set(PLUGIN_RPC_CONTEXT.MESSAGE_REGISTRY_MAIN, messageRegistryMain);
 
-    const terminalMain = new TerminalServiceMainImpl(container);
+    const terminalMain = new TerminalServiceMainImpl(container, rpc);
     rpc.set(PLUGIN_RPC_CONTEXT.TERMINAL_MAIN, terminalMain);
 }

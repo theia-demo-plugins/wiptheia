@@ -5,6 +5,8 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
+// import { Disposable } from "../../common";
+
 /**
  * Terminal model describes interfaces for creation and using terminal widget even without defining server side connection.
  * Terminal widget can be created from external externsion and can be attached to another Theia widgets which
@@ -29,4 +31,5 @@ export interface TerminalWidget {
     createTerminal(): Promise<number | undefined>;
     sendText(text: string, addNewLine?: boolean): void;
     dispose(): void;
+    // onDidClosed(dispose: Disposable): void;
 }
