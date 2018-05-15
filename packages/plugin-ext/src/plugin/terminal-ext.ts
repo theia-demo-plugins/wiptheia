@@ -7,11 +7,7 @@
 import { EventEmitter, Terminal, TerminalOptions } from "@theia/plugin";
 import { TerminalServiceExt, TerminalServiceMain, PLUGIN_RPC_CONTEXT } from "../api/plugin-api";
 import { RPCProtocol } from "../api/rpc-protocol";
-import {
-    Emitter,
-    // Disposable
-    Event
- } from "@theia/core/lib/common/event";
+import { Emitter, Event } from "@theia/core/lib/common/event";
 
 export class TerminalServiceExtImpl implements TerminalServiceExt {
 
@@ -21,8 +17,6 @@ export class TerminalServiceExtImpl implements TerminalServiceExt {
 
     constructor(rpc: RPCProtocol) {
         this.proxy = rpc.getProxy(PLUGIN_RPC_CONTEXT.TERMINAL_MAIN);
-        console.log("create terminal ext service");
-        console.log(this.onDidCloseTerminal);
     }
 
     createTerminal(nameOrOptions: TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): Terminal {
@@ -46,7 +40,6 @@ export class TerminalServiceExtImpl implements TerminalServiceExt {
     }
 
     $terminalClosed(id: number): void {
-        console.log("terminal closed !!!");
         const terminal = this.terminals.get(id);
         if (terminal) {
             this._onDidCloseTerminal.fire(terminal);

@@ -6,23 +6,21 @@
  */
 
 import { TerminalOptions } from "@theia/plugin";
-import { TerminalServiceMain, TerminalServiceExt,
-    // MAIN_RPC_CONTEXT
- } from "../../api/plugin-api";
+import { TerminalServiceMain, TerminalServiceExt, MAIN_RPC_CONTEXT } from "../../api/plugin-api";
 import { interfaces } from "inversify";
 import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
 import { TerminalWidget } from "@theia/core/lib/browser/terminal/terminal-model";
 import { RPCProtocol } from "../../api/rpc-protocol";
-// import { Disposable } from "@theia/plugin";
+import { Disposable } from "@theia/core/lib/common/disposable";
 
-// export class TerminalDisposable implements Disposable {
+export class TerminalDisposable implements Disposable {
 
-//     constructor(private readonly proxy: TerminalServiceExt, private readonly terminalId: number) { }
+    constructor(private readonly proxy: TerminalServiceExt, private readonly terminalId: number) { }
 
-//     dispose(): void {
-//         this.proxy.$terminalClosed(this.terminalId);
-//     }
-// }
+    dispose(): void {
+        this.proxy.$terminalClosed(this.terminalId);
+    }
+}
 
 export class TerminalServiceMainImpl implements TerminalServiceMain {
 
@@ -32,8 +30,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
 
     constructor(container: interfaces.Container, rpc: RPCProtocol) {
         this.terminalService = container.get(TerminalService);
-        // this.extProxy = rpc.getProxy(MAIN_RPC_CONTEXT.TERMINAL_EXT);
-        console.log(this.extProxy);
+        this.extProxy = rpc.getProxy(MAIN_RPC_CONTEXT.TERMINAL_EXT);
     }
 
     async $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
@@ -41,7 +38,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
         let id = await terminalWidget.createTerminal();
         if (id) {
             this.terminals.set(id, terminalWidget);
-            // terminalWidget.onDidClosed(new TerminalDisposable(this.extProxy, id));
+            terminalWidget.onDidClosed(new TerminalDisposable(this.extProxy, id));
         } else {
             id = -1;
         }

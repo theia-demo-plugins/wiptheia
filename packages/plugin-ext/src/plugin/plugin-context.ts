@@ -20,7 +20,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
     const quickOpenExt = rpc.set(MAIN_RPC_CONTEXT.QUICK_OPEN_EXT, new QuickOpenExtImpl(rpc));
     const messageRegistryExt = new MessageRegistryExt(rpc);
-    const terminalExt = new TerminalServiceExtImpl(rpc);
+    const terminalExt = rpc.set(MAIN_RPC_CONTEXT.TERMINAL_EXT, new TerminalServiceExtImpl(rpc));
 
     const commands: typeof theia.commands = {
         registerCommand(command: theia.Command, handler?: <T>(...args: any[]) => T | Thenable<T>): Disposable {
@@ -59,9 +59,9 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         createTerminal(nameOrOptions: theia.TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): theia.Terminal {
             return terminalExt.createTerminal(nameOrOptions, shellPath, shellArgs);
         },
-        // get onDidCloseTerminal(): theia.Event<theia.Terminal>{
-        //     return {} as any;
-        // }
+        get onDidCloseTerminal(): theia.Event<theia.Terminal> {
+             return terminalExt.onDidCloseTerminal;
+        },
         set onDidCloseTerminal(event: theia.Event<theia.Terminal>) {
             terminalExt.onDidCloseTerminal = event;
         }

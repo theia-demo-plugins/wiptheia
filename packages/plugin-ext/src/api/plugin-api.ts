@@ -103,5 +103,5 @@ export const MAIN_RPC_CONTEXT = {
     HOSTED_PLUGIN_MANAGER_EXT: createProxyIdentifier<HostedPluginManagerExt>('HostedPluginManagerExt'),
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
     QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
-    // TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt")
+    TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt")
 };

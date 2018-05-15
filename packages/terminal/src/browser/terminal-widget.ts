@@ -75,7 +75,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     @inject(TerminalWatcher) protected readonly terminalWatcher: TerminalWatcher;
     @inject(ILogger) @named('terminal') protected readonly logger: ILogger;
 
-    // protected readonly onDidClosedActions = new DisposableCollection();
+    protected readonly onDidClosedActions = new DisposableCollection();
     protected readonly toDisposeOnConnect = new DisposableCollection();
 
     @postConstruct()
@@ -137,8 +137,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         this.toDispose.push(this.terminalWatcher.onTerminalExit(({ terminalId }) => {
             if (terminalId === this.terminalId) {
                 this.title.label = "<terminated>";
-                // this.onDidClosedActions.dispose();
-                // console.log("terminal killed");
+                this.onDidClosedActions.dispose();
             }
         }));
         this.toDispose.push(this.toDisposeOnConnect);
@@ -382,9 +381,9 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         super.dispose();
     }
 
-    // onDidClosed(dispose: Disposable): void {
-    //     this.onDidClosedActions.push(dispose);
-    // }
+    onDidClosed(dispose: Disposable): void {
+        this.onDidClosedActions.push(dispose);
+    }
 
     private async doResize() {
         await Promise.all([this.waitForResized.promise, this.waitForTermOpened.promise]);
