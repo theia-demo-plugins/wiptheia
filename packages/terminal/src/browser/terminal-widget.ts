@@ -16,19 +16,11 @@ import { IBaseTerminalServer } from '../common/base-terminal-protocol';
 import { TerminalWatcher } from '../common/terminal-watcher';
 import { ThemeService } from "@theia/core/lib/browser/theming";
 import { Deferred } from "@theia/core/lib/common/promise-util";
-import { TerminalWidget } from '@theia/core/lib/browser/terminal/terminal-model';
+import { TerminalWidget, TerminalWidgetOptions } from '@theia/core/lib/browser/terminal/terminal-model';
 
 Xterm.Terminal.applyAddon(require('xterm/lib/addons/fit/fit'));
 
 export const TERMINAL_WIDGET_FACTORY_ID = 'terminal';
-
-export const TerminalWidgetOptions = Symbol("TerminalWidgetOptions");
-export interface TerminalWidgetOptions {
-    id: string,
-    caption: string,
-    label: string
-    destroyTermOnClose: boolean
-}
 
 export interface TerminalWidgetFactoryOptions extends Partial<TerminalWidgetOptions> {
     /* a unique string per terminal */

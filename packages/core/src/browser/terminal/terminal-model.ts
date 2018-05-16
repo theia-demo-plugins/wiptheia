@@ -12,8 +12,8 @@ import { Disposable } from "../../common";
  * Terminal widget can be created from external externsion and can be attached to another Theia widgets which
  * support adding external widgets.
  */
-
-export interface TerminalOptions {
+export const TerminalWidgetOptions = Symbol("TerminalWidgetOptions");
+export interface TerminalWidgetOptions {
 
     readonly name?: string;
 
@@ -24,6 +24,10 @@ export interface TerminalOptions {
     readonly cwd?: string;
 
     readonly env?: { [key: string]: string | null };
+
+    destroyTermOnClose?: boolean;
+
+    id: string;
 }
 
 export const TerminalWidget = Symbol("TerminalWidget");

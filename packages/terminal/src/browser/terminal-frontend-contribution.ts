@@ -23,7 +23,7 @@ import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { TERMINAL_WIDGET_FACTORY_ID, TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-widget';
 import { TerminalKeybindingContexts } from "./terminal-keybinding-contexts";
 import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
-import {TerminalOptions, TerminalWidget} from "@theia/core/lib/browser/terminal/terminal-model";
+import {TerminalWidgetOptions, TerminalWidget} from "@theia/core/lib/browser/terminal/terminal-model";
 
 export namespace TerminalCommands {
     export const NEW: Command = {
@@ -149,9 +149,10 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
         }
     }
 
-    public async newTerminal(options: TerminalOptions): Promise<TerminalWidget & Widget> {
+    public async newTerminal(options: TerminalWidgetOptions): Promise<TerminalWidget & Widget> {
         const widget = <TerminalWidgetImpl>await this.widgetManager.getOrCreateWidget(TERMINAL_WIDGET_FACTORY_ID, <TerminalWidgetFactoryOptions>{
-            created: new Date().toString()
+            created: new Date().toString(),
+            ...options
         });
         widget.start();
         return widget;
