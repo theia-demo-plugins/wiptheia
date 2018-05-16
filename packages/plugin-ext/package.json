@@ -5,8 +5,7 @@
   "dependencies": {
     "@theia/core": "^0.3.10",
     "@theia/filesystem": "^0.3.10",
-    "@theia/workspace": "^0.3.10",
-    "@theia/terminal": "^0.3.10"
+    "@theia/workspace": "^0.3.10"
   },
   "publishConfig": {
     "access": "public"

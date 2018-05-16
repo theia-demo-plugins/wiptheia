@@ -51,6 +51,9 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     private term: Xterm.Terminal;
     private cols: number;
     private rows: number;
+
+    private readonly TERMINAL = "Terminal";
+
     protected restored = false;
     protected closeOnDispose = true;
     protected openAfterShow = false;
@@ -66,15 +69,15 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     @inject(ShellTerminalServerProxy) protected readonly shellTerminalServer: ShellTerminalServerProxy;
     @inject(TerminalWatcher) protected readonly terminalWatcher: TerminalWatcher;
     @inject(ILogger) @named('terminal') protected readonly logger: ILogger;
+    @inject("terminal-id") public readonly id: string;
 
     protected readonly onDidClosedActions = new DisposableCollection();
     protected readonly toDisposeOnConnect = new DisposableCollection();
 
     @postConstruct()
     protected init(): void {
-        this.id = this.options.id;
-        this.title.caption = this.options.caption;
-        this.title.label = this.options.label;
+        this.title.caption = this.options.title || this.TERMINAL;
+        this.title.label = this.options.title  || this.TERMINAL;
         this.title.iconClass = "fa fa-terminal";
 
         if (this.options.destroyTermOnClose === true) {
@@ -112,7 +115,9 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         }));
 
         this.term.on('title', (title: string) => {
-            this.title.label = title;
+            if (this.options.overrideTitle) {
+                this.title.label = title;
+            }
         });
         if (isFirefox) {
             // The software scrollbars don't work with xterm.js, so we disable the scrollbar if we are on firefox.

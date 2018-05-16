@@ -15,7 +15,7 @@ import { Disposable } from "../../common";
 export const TerminalWidgetOptions = Symbol("TerminalWidgetOptions");
 export interface TerminalWidgetOptions {
 
-    readonly name?: string;
+    readonly title?: string ;
 
     readonly shellPath?: string;
 
@@ -27,7 +27,9 @@ export interface TerminalWidgetOptions {
 
     destroyTermOnClose?: boolean;
 
-    id: string;
+    overrideTitle?: boolean;
+
+    id?: string;
 }
 
 export const TerminalWidget = Symbol("TerminalWidget");

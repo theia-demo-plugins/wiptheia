@@ -9,8 +9,8 @@ import { ContainerModule, Container } from 'inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
 import { KeybindingContribution, WebSocketConnectionProvider, WidgetFactory, KeybindingContext } from '@theia/core/lib/browser';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
-import { TerminalWidgetImpl, TerminalWidgetOptions, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget';
-import { TerminalWidget } from '@theia/core/lib/browser/terminal/terminal-model';
+import { TerminalWidgetImpl, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget';
+import { TerminalWidget, TerminalWidgetOptions } from '@theia/core/lib/browser/terminal/terminal-model';
 import { ITerminalServer, terminalPath } from '../common/terminal-protocol';
 import { TerminalWatcher } from '../common/terminal-watcher';
 import { IShellTerminalServer, shellTerminalPath, ShellTerminalServerProxy } from '../common/shell-terminal-protocol';
@@ -34,13 +34,15 @@ export default new ContainerModule(bind => {
             const child = new Container({ defaultScope: 'Singleton' });
             child.parent = ctx.container;
             const counter = terminalNum++;
-            child.bind(TerminalWidgetOptions).toConstantValue({
-                id: 'terminal-' + counter,
-                caption: 'Terminal ' + counter,
-                label: 'Terminal ' + counter,
+            const id = options.id || 'terminal-' + counter;
+            const widgetOptions: TerminalWidgetOptions = {
+                title: 'Terminal ' + counter,
+                overrideTitle: true,
                 destroyTermOnClose: true,
                 ...options
-            });
+            };
+            child.bind(TerminalWidgetOptions).toConstantValue(widgetOptions);
+            child.bind("terminal-id").toConstantValue(id);
             return child.get(TerminalWidget);
         }
     }));

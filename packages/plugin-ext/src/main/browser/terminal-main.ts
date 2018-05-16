@@ -9,7 +9,7 @@ import { TerminalOptions } from "@theia/plugin";
 import { TerminalServiceMain, TerminalServiceExt, MAIN_RPC_CONTEXT } from "../../api/plugin-api";
 import { interfaces } from "inversify";
 import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
-import { TerminalWidget } from "@theia/core/lib/browser/terminal/terminal-model";
+import { TerminalWidget, TerminalWidgetOptions } from "@theia/core/lib/browser/terminal/terminal-model";
 import { RPCProtocol } from "../../api/rpc-protocol";
 import { Disposable } from "@theia/core/lib/common/disposable";
 
@@ -34,11 +34,20 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
     }
 
     async $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
-        const terminalWidget = await this.terminalService.newTerminal(options);
-        let id = await terminalWidget.createTerminal();
+        const termWidgetOptions: TerminalWidgetOptions = {
+            title: options.name,
+            shellPath: options.shellPath,
+            shellArgs: options.shellArgs,
+            cwd: options.cwd,
+            env: options.env,
+            destroyTermOnClose: true,
+            overrideTitle: false,
+        };
+        const termWidget = await this.terminalService.newTerminal(termWidgetOptions);
+        let id = await termWidget.createTerminal();
         if (id) {
-            this.terminals.set(id, terminalWidget);
-            terminalWidget.onDidClosed(new TerminalDisposable(this.extProxy, id));
+            this.terminals.set(id, termWidget);
+            termWidget.onDidClosed(new TerminalDisposable(this.extProxy, id));
         } else {
             id = -1;
         }
