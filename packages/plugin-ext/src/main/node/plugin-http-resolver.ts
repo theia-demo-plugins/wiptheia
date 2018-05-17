@@ -49,17 +49,7 @@ export class HttpPluginDeployerResolver implements PluginDeployerResolver {
 
             const dirname = path.dirname(link.pathname);
             const basename = path.basename(link.pathname);
-            console.log('basename is', basename);
-            console.log('dirname is', dirname);
-
             const filename = dirname.replace(/\W/g, '_') + ('-') + basename;
-            console.log('filename is', filename);
-            console.log('dirname is', dirname);
-            /*
-                        let filename = parsed.pathname pluginResolverContext.getOriginId().replace(/\W/g, '_');
-                        if (filename.endsWith('theia')) {
-                            filename = filename + '.theia';
-                        }*/
             const unpackedPath = path.resolve(this.unpackedFolder, path.basename(filename));
 
             const finish = () => {

@@ -17,6 +17,5 @@ export default new ContainerModule(bind => {
     bind(PluginDeployerDirectoryHandler).to(PluginVsCodeDirectoryHandler).inSingletonScope();
     bind(PluginScanner).to(VsCodePluginScanner).inSingletonScope();
     bind(PluginDeployerResolver).to(VsCodePluginDeployerResolver).inSingletonScope();
-
 }
 );
