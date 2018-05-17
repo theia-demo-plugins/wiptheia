@@ -131,7 +131,7 @@ export class GithubPluginDeployerResolver implements PluginDeployerResolver {
     }
 
     /**
-     * Handle only the plugins that starts with vsgithubcode:
+     * Handle only the plugins that starts with github:
      */
     accept(pluginId: string): boolean {
         return pluginId.startsWith(GithubPluginDeployerResolver.PREFIX);
