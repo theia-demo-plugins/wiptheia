@@ -13,10 +13,12 @@ import { MAIN_RPC_CONTEXT, Plugin } from '../api/plugin-api';
 import { RPCProtocol } from '../api/rpc-protocol';
 import { getPluginId } from '../common/plugin-protocol';
 import { Disposable } from './types-impl';
+import { WindowStateExtImpl } from './window-state';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
     const quickOpenExt = rpc.set(MAIN_RPC_CONTEXT.QUICK_OPEN_EXT, new QuickOpenExtImpl(rpc));
+    const windowStateExt = rpc.set(MAIN_RPC_CONTEXT.WINDOW_STATE_EXT, new WindowStateExtImpl(rpc));
 
     const commands: typeof theia.commands = {
         registerCommand(command: theia.Command, handler?: <T>(...args: any[]) => T | Thenable<T>): Disposable {
@@ -36,7 +38,15 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
     const window: typeof theia.window = {
         showQuickPick(items: any, options: theia.QuickPickOptions, token?: theia.CancellationToken): any {
             return quickOpenExt.showQuickPick(items, options, token);
+        },
+
+        get state(): theia.WindowState {
+            return windowStateExt.getWindowState();
+        },
+        onDidChangeWindowState(listener, thisArg?, disposables?) {
+            return windowStateExt.onDidChangeWindowState(listener, thisArg, disposables);
         }
+
     };
 
     return <typeof theia>{

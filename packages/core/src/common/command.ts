@@ -71,7 +71,7 @@ export interface CommandService {
      *
      * Reject if a command cannot be executed.
      */
-    executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined>;
+    <T>(command: string, ...args: any[]): Promise<T | undefined>;
 }
 
 /**
