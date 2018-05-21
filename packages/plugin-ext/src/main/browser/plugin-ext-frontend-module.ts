@@ -13,13 +13,15 @@ import { HostedPluginSupport } from "../../hosted/browser/hosted-plugin";
 import { HostedPluginWatcher } from "../../hosted/browser/hosted-plugin-watcher";
 import { HostedPluginManagerClient } from "./plugin-manager-client";
 import { PluginApiFrontendContribution } from "./plugin-frontend-contribution";
-import { setUpPluginApi } from "./main-context";
+// import { setUpPluginApi } from "./main-context";
 import { HostedPluginServer, hostedServicePath } from "../../common/plugin-protocol";
 import { ModalNotification } from './dialogs/modal-notification';
 import { PluginWidget } from "./plugin-ext-widget";
 import { PluginFrontendViewContribution } from "./plugin-frontend-view-contribution";
 
 import '../../../src/main/browser/style/index.css';
+import { TextEditorService, TextEditorServiceImpl } from "./text-editor-service";
+import { EditorModelService, EditorModelServiceImpl } from "./text-editor-model-service";
 
 export default new ContainerModule(bind => {
     bind(ModalNotification).toSelf().inSingletonScope();
@@ -33,11 +35,14 @@ export default new ContainerModule(bind => {
     bind(FrontendApplicationContribution).toDynamicValue(c => c.container.get(PluginApiFrontendContribution));
     bind(CommandContribution).toDynamicValue(c => c.container.get(PluginApiFrontendContribution));
 
+    bind(TextEditorService).to(TextEditorServiceImpl).inSingletonScope();
+    bind(EditorModelService).to(EditorModelServiceImpl).inSingletonScope();
+
     bind(FrontendApplicationContribution).toDynamicValue(ctx => ({
         onStart(app: FrontendApplication): MaybePromise<void> {
-            const worker = ctx.container.get(PluginWorker);
+            // const worker = ctx.container.get(PluginWorker);
 
-            setUpPluginApi(worker.rpc, ctx.container);
+            // setUpPluginApi(worker.rpc, ctx.container);
             ctx.container.get(HostedPluginSupport).checkAndLoadPlugin(ctx.container);
         }
     }));

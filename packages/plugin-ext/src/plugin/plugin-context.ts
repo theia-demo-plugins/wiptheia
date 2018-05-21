@@ -12,13 +12,19 @@ import { QuickOpenExtImpl } from './quick-open';
 import { MAIN_RPC_CONTEXT, Plugin } from '../api/plugin-api';
 import { RPCProtocol } from '../api/rpc-protocol';
 import { getPluginId } from '../common/plugin-protocol';
-import { Disposable } from './types-impl';
 import { MessageRegistryExt } from './message-registry';
+import { Disposable, Position, Range, Selection, ViewColumn, TextEditorSelectionChangeKind } from './types-impl';
+import { EditorsAndDocumentsExtImpl } from './editors-and-documents';
+import { TextEditorsExtImpl } from './text-editors';
+import { DocumentsExtImpl } from './documents';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
     const quickOpenExt = rpc.set(MAIN_RPC_CONTEXT.QUICK_OPEN_EXT, new QuickOpenExtImpl(rpc));
     const messageRegistryExt = new MessageRegistryExt(rpc);
+    const editorsAndDocuments = rpc.set(MAIN_RPC_CONTEXT.EDITORS_AND_DOCUMENTS_EXT, new EditorsAndDocumentsExtImpl(rpc));
+    const editors = rpc.set(MAIN_RPC_CONTEXT.TEXT_EDITORS_EXT, new TextEditorsExtImpl(rpc, editorsAndDocuments));
+    const documents = rpc.set(MAIN_RPC_CONTEXT.DOCUMENTS_EXT, new DocumentsExtImpl(rpc, editorsAndDocuments));
 
     const commands: typeof theia.commands = {
         registerCommand(command: theia.Command, handler?: <T>(...args: any[]) => T | Thenable<T>): Disposable {
@@ -36,6 +42,30 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
     };
 
     const window: typeof theia.window = {
+        get activeTextEditor() {
+            return editors.getActiveEditor();
+        },
+        get visibleTextEditors() {
+            return editors.getVisibleTextEditors();
+        },
+        onDidChangeActiveTextEditor(listener, thisArg?, disposables?) {
+            return editors.onDidChangeActiveTextEditor(listener, thisArg, disposables);
+        },
+        onDidChangeVisibleTextEditors(listener, thisArg?, disposables?) {
+            return editors.onDidChangeVisibleTextEditors(listener, thisArg, disposables);
+        },
+        onDidChangeTextEditorSelection(listener, thisArg?, disposables?) {
+            return editors.onDidChangeTextEditorSelection(listener, thisArg, disposables);
+        },
+        onDidChangeTextEditorOptions(listener, thisArg?, disposables?) {
+            return editors.onDidChangeTextEditorOptions(listener, thisArg, disposables);
+        },
+        onDidChangeTextEditorViewColumn(listener, thisArg?, disposables?) {
+            return editors.onDidChangeTextEditorViewColumn(listener, thisArg, disposables);
+        },
+        onDidChangeTextEditorVisibleRanges(listener, thisArg?, disposables?) {
+            return editors.onDidChangeTextEditorVisibleRanges(listener, thisArg, disposables);
+        },
         showQuickPick(items: any, options: theia.QuickPickOptions, token?: theia.CancellationToken): any {
             return quickOpenExt.showQuickPick(items, options, token);
         },
@@ -56,13 +86,34 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         }
     };
 
+    const workspace: typeof theia.workspace = {
+        get textDocuments() {
+            return documents.getAllDocumentData().map(data => data.document);
+        },
+        onDidChangeTextDocument(listener, thisArg?, disposables?) {
+            return documents.onDidChangeDocument(listener, thisArg, disposables);
+        },
+        onDidCloseTextDocument(listener, thisArg?, disposables?) {
+            return documents.onDidRemoveDocument(listener, thisArg, disposables);
+        },
+        onDidOpenTextDocument(listener, thisArg?, disposables?) {
+            return documents.onDidAddDocument(listener, thisArg, disposables);
+        },
+    };
+
     return <typeof theia>{
         commands,
         window,
+        workspace,
         // Types
         Disposable: Disposable,
         EventEmitter: Emitter,
-        CancellationTokenSource: CancellationTokenSource
+        CancellationTokenSource: CancellationTokenSource,
+        Position: Position,
+        Range: Range,
+        Selection: Selection,
+        ViewColumn: ViewColumn,
+        TextEditorSelectionChangeKind: TextEditorSelectionChangeKind,
     };
 
 }
