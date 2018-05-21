@@ -5,6 +5,7 @@
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
+// TODO: replace this class with `Deferred`
 export class ExtendedPromise<T> implements Promise<T> {
     private delegate: Promise<T>;
     private resolveDelegate: (value?: T) => void;

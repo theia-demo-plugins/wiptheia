@@ -9,7 +9,8 @@
     "@theia/filesystem": "^0.3.10",
     "@theia/workspace": "^0.3.10",
     "@theia/plugin": "^0.3.10",
-    "decompress": "^4.2.0"
+    "decompress": "^4.2.0",
+    "@theia/monaco": "^0.3.10"
   },
   "publishConfig": {
     "access": "public"
