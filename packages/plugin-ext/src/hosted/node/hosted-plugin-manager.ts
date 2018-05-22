@@ -11,7 +11,7 @@ import * as fs from "fs";
 import * as net from "net";
 import URI from '@theia/core/lib/common/uri';
 import { ContributionProvider } from "@theia/core/lib/common/contribution-provider";
-import { HostedPluginUriPostProcessor } from "./hosted-plugin-uri-postprocessor";
+import { HostedPluginUriPostProcessor, HostedPluginUriPostProcessorSymbolName } from "./hosted-plugin-uri-postprocessor";
 const processTree = require('ps-tree');
 
 export const HostedPluginManager = Symbol('HostedPluginManager');
@@ -87,6 +87,9 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
         if (pluginUri.scheme === 'file') {
             processOptions = { ...PROCESS_OPTIONS };
             processOptions.env.HOSTED_PLUGIN = pluginUri.path.toString();
+
+            // Disable all the other plugins on this instance
+            processOptions.env.THEIA_PLUGINS = '';
             command = await this.getStartCommand(port);
         } else {
             throw new Error('Not supported plugin location: ' + pluginUri.toString());
@@ -198,7 +201,7 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
 
 @injectable()
 export class NodeHostedPluginRunner extends AbstractHostedPluginManager {
-    @inject(ContributionProvider) @named(HostedPluginUriPostProcessor)
+    @inject(ContributionProvider) @named(Symbol.for(HostedPluginUriPostProcessorSymbolName))
     protected readonly uriPostProcessors: ContributionProvider<HostedPluginUriPostProcessor>;
 
     protected async postProcessInstanceUri(uri: URI): Promise<URI> {
