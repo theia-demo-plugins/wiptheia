@@ -20,9 +20,11 @@ export type ShellProcessFactory = (options: ShellProcessOptions) => ShellProcess
 export const ShellProcessOptions = Symbol("ShellProcessOptions");
 export interface ShellProcessOptions {
     shell?: string,
+    args?: string[],
     rootURI?: string,
     cols?: number,
-    rows?: number
+    rows?: number,
+    env?: { [key: string]: string | null },
 }
 
 function getRootPath(rootURI?: string): string {
@@ -32,6 +34,21 @@ function getRootPath(rootURI?: string): string {
     } else {
         return os.homedir();
     }
+}
+
+function setUpEnvVariables(optionsEnv?:  { [key: string]: string | null }): NodeJS.ProcessEnv {
+    const prEnv: NodeJS.ProcessEnv = process.env;
+    // todo check and don't broke global env variables, create copy if needed
+    if (optionsEnv) {
+        for (const envName of Object.keys(optionsEnv)) {
+            const envValue = optionsEnv[envName];
+            if (envValue) {
+                prEnv[envName] = envValue;
+            }
+        }
+    }
+
+    return prEnv;
 }
 
 @injectable()
@@ -48,13 +65,13 @@ export class ShellProcess extends TerminalProcess {
     ) {
         super(<TerminalProcessOptions>{
             command: options.shell || ShellProcess.getShellExecutablePath(),
-            args: ShellProcess.getShellExecutableArgs(),
+            args: options.args || ShellProcess.getShellExecutableArgs(),
             options: {
                 name: 'xterm-color',
                 cols: options.cols || ShellProcess.defaultCols,
                 rows: options.rows || ShellProcess.defaultRows,
                 cwd: getRootPath(options.rootURI),
-                env: process.env as any
+                env: setUpEnvVariables(options.env),
             }
         }, processManager, ringBuffer, logger);
     }

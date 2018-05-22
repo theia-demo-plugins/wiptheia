@@ -259,8 +259,17 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
             const root = await this.workspaceService.root;
             rootURI = root && root.uri;
         }
+
         const { cols, rows } = this;
-        const terminalId = await this.shellTerminalServer.create({ rootURI, cols, rows });
+
+        const terminalId = await this.shellTerminalServer.create({
+            shell: this.options.shellPath,
+            args: this.options.shellArgs,
+            env: this.options.env,
+            rootURI,
+            cols,
+            rows
+        });
         if (IBaseTerminalServer.validateId(terminalId)) {
             return terminalId;
         }

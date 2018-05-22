@@ -3,6 +3,7 @@
   "compilerOptions": {
     "skipLibCheck": false,
     "baseUrl": ".",
+    "typeRoots": ["node_modules/@types/node"],
     "paths": {
       "@theia/application-package": [
         "dev-packages/application-package/src"
