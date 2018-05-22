@@ -60,7 +60,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         get state(): theia.WindowState {
             return windowStateExt.getWindowState();
         },
-        onDidChangeWindowState(listener, thisArg?, disposables?) {
+        onDidChangeWindowState(listener, thisArg?, disposables?): theia.Disposable {
             return windowStateExt.onDidChangeWindowState(listener, thisArg, disposables);
         }
     };
