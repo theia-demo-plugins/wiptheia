@@ -151,13 +151,11 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     storeState(): object {
-        console.log("store");
         this.closeOnDispose = false;
         return { terminalId: this.terminalId, titleLabel: this.title.label, rows: this.rows, cols: this.cols };
     }
 
     restoreState(oldState: object) {
-        console.log("restore");
         if (this.restored === false) {
             const state = oldState as { terminalId: number, titleLabel: string, rows: number, cols: number };
             /* This is a workaround to issue #879 */
@@ -246,16 +244,8 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
      * If id is provided attach to the terminal for this id.
      */
     public async start(id?: number): Promise<number> {
-        console.log("start method");
-        // await this.waitForResized.promise;
-        try {
-            this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id); // todo await
-        } catch (err) {
-            console.log("error", err);
-        }
+        this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id); // todo await
         if (typeof this.terminalId === "number") {
-            // await this.doResize();
-            console.log("connect to the terminal inside start");
             this.connectTerminalProcess();
         }
         return this.terminalId || -1;
@@ -270,7 +260,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         return this.createTerminal();
     }
 
-    async createTerminal(): Promise<number | undefined> {
+    protected async createTerminal(): Promise<number | undefined> {
         let rootURI = this.options.cwd;
         if (!rootURI) {
             const root = await this.workspaceService.root;
@@ -295,7 +285,6 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     protected async openTerm(): Promise<void> {
-        console.log("open term!");
         this.isOpeningTerm = true;
 
         if (this.isTermOpen === true) {
@@ -376,7 +365,6 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
             path: `${terminalsPath}/${this.terminalId}`,
             onConnection: connection => {
                 connection.onNotification('onData', (data: string) => {
-                    console.log("Hey, we got a data!", data);
                     this.term.write(data);
                 });
 
@@ -388,7 +376,6 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
                 connection.listen();
                 this.waitForConnection.resolve();
                 this.connection = connection;
-                console.log("connected");
             }
         }, { reconnecting: false });
     }
@@ -429,7 +416,6 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         const geo = this.term.proposeGeometry();
         this.cols = geo.cols;
         this.rows = geo.rows - 1; // subtract one row for margin
-        console.log("resize", this.cols, this.rows);
         this.term.resize(this.cols, this.rows);
     }
 }
