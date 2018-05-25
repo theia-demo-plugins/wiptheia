@@ -34,7 +34,7 @@ export interface TerminalWidgetOptions {
 
 export const TerminalWidget = Symbol("TerminalWidget");
 export interface TerminalWidget {
-    createTerminal(): Promise<number | undefined>;
+    start(): Promise<number>;
     sendText(text: string, addNewLine?: boolean): void;
     dispose(): void;
     onDidClosed(dispose: Disposable): void;

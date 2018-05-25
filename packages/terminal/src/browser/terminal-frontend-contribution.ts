@@ -47,7 +47,10 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
             isEnabled: () => true,
             execute: () => {
                 const newTermPromise = this.newTerminal({});
-                newTermPromise.then(term => this.activateWidget(term));
+                newTermPromise.then(termWidget => {
+                    termWidget.start();
+                    this.activateWidget(termWidget);
+                });
             }
         });
     }
@@ -154,7 +157,6 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
             created: new Date().toString(),
             ...options
         });
-        widget.start();
         return widget;
     }
 

@@ -17,6 +17,7 @@ import { TerminalWatcher } from '../common/terminal-watcher';
 import { ThemeService } from "@theia/core/lib/browser/theming";
 import { Deferred } from "@theia/core/lib/common/promise-util";
 import { TerminalWidget, TerminalWidgetOptions } from '@theia/core/lib/browser/terminal/terminal-model';
+import { MessageConnection } from 'vscode-jsonrpc';
 
 Xterm.Terminal.applyAddon(require('xterm/lib/addons/fit/fit'));
 
@@ -62,6 +63,8 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
 
     protected readonly waitForResized = new Deferred<void>();
     protected readonly waitForTermOpened = new Deferred<void>();
+    protected readonly waitForConnection = new Deferred<void>();
+    private connection: MessageConnection;
 
     @inject(WorkspaceService) protected readonly workspaceService: WorkspaceService;
     @inject(WebSocketConnectionProvider) protected readonly webSocketConnectionProvider: WebSocketConnectionProvider;
@@ -77,7 +80,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     @postConstruct()
     protected init(): void {
         this.title.caption = this.options.title || this.TERMINAL;
-        this.title.label = this.options.title  || this.TERMINAL;
+        this.title.label = this.options.title || this.TERMINAL;
         this.title.iconClass = "fa fa-terminal";
 
         if (this.options.destroyTermOnClose === true) {
@@ -148,16 +151,22 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     storeState(): object {
+        console.log("store");
         this.closeOnDispose = false;
-        return { terminalId: this.terminalId, titleLabel: this.title.label };
+        return { terminalId: this.terminalId, titleLabel: this.title.label, rows: this.rows, cols: this.cols };
     }
 
     restoreState(oldState: object) {
+        console.log("restore");
         if (this.restored === false) {
-            const state = oldState as { terminalId: number, titleLabel: string };
+            const state = oldState as { terminalId: number, titleLabel: string, rows: number, cols: number };
             /* This is a workaround to issue #879 */
             this.restored = true;
             this.title.label = state.titleLabel;
+            console.log("restore info", state.cols, state.rows);
+            this.cols = state.cols;
+            this.rows = state.rows;
+            this.term.resize(state.cols, state.rows);
             this.start(state.terminalId);
         }
     }
@@ -236,14 +245,22 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
      * new terminal widget.
      * If id is provided attach to the terminal for this id.
      */
-    async start(id?: number): Promise<void> {
-        await this.waitForResized.promise;
-        this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id);
+    public async start(id?: number): Promise<number> {
+        console.log("start method");
+        // await this.waitForResized.promise;
+        try {
+            this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id); // todo await
+        } catch (err) {
+            console.log("error", err);
+        }
         if (typeof this.terminalId === "number") {
-            await this.doResize();
+            // await this.doResize();
+            console.log("connect to the terminal inside start");
             this.connectTerminalProcess();
         }
+        return this.terminalId || -1;
     }
+
     protected async attachTerminal(id: number): Promise<number | undefined> {
         const terminalId = await this.shellTerminalServer.attach(id);
         if (IBaseTerminalServer.validateId(terminalId)) {
@@ -253,7 +270,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         return this.createTerminal();
     }
 
-    public async createTerminal(): Promise<number | undefined> {
+    async createTerminal(): Promise<number | undefined> {
         let rootURI = this.options.cwd;
         if (!rootURI) {
             const root = await this.workspaceService.root;
@@ -278,6 +295,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     protected async openTerm(): Promise<void> {
+        console.log("open term!");
         this.isOpeningTerm = true;
 
         if (this.isTermOpen === true) {
@@ -357,7 +375,10 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         this.webSocketConnectionProvider.listen({
             path: `${terminalsPath}/${this.terminalId}`,
             onConnection: connection => {
-                connection.onNotification('onData', (data: string) => this.sendText(data));
+                connection.onNotification('onData', (data: string) => {
+                    console.log("Hey, we got a data!", data);
+                    this.term.write(data);
+                });
 
                 const sendData = (data?: string) => data && connection.sendRequest('write', data);
                 this.term.on('data', sendData);
@@ -365,6 +386,9 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
 
                 this.toDisposeOnConnect.push(connection);
                 connection.listen();
+                this.waitForConnection.resolve();
+                this.connection = connection;
+                console.log("connected");
             }
         }, { reconnecting: false });
     }
@@ -375,11 +399,15 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     sendText(text: string, addNewLine?: boolean): void {
-        if (addNewLine) {
-            this.term.writeln(text);
-        } else {
-            this.term.write(text);
-        }
+        this.waitForConnection.promise.then(() => {
+            console.log("send text", text);
+            this.connection.sendRequest('write', text);
+            // if (addNewLine) {
+            //     this.term.writeln(text);
+            // } else {
+            //     this.term.write(text);
+            // }
+        });
     }
 
     dispose(): void {
@@ -396,10 +424,12 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     private async doResize() {
-        await Promise.all([this.waitForResized.promise, this.waitForTermOpened.promise]);
+        await Promise.all([this.waitForTermOpened.promise]); // this.waitForResized.promise,
+
         const geo = this.term.proposeGeometry();
         this.cols = geo.cols;
         this.rows = geo.rows - 1; // subtract one row for margin
+        console.log("resize", this.cols, this.rows);
         this.term.resize(this.cols, this.rows);
     }
 }

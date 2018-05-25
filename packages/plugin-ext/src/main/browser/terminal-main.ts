@@ -33,7 +33,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
         this.extProxy = rpc.getProxy(MAIN_RPC_CONTEXT.TERMINAL_EXT);
     }
 
-    async $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
+    $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
         const termWidgetOptions: TerminalWidgetOptions = {
             title: options.name,
             shellPath: options.shellPath,
@@ -43,15 +43,27 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
             destroyTermOnClose: true,
             overrideTitle: false,
         };
-        const termWidget = await this.terminalService.newTerminal(termWidgetOptions);
-        let id = await termWidget.createTerminal();
-        if (id) {
-            this.terminals.set(id, termWidget);
-            termWidget.onDidClosed(new TerminalDisposable(this.extProxy, id));
-        } else {
-            id = -1;
-        }
-        return id;
+        return new Promise<number>((resolve, reject) => {
+            this.terminalService.newTerminal(termWidgetOptions)
+            .then(termWidget => {
+                termWidget.start()
+                .then(id => {
+                    if (id) {
+                        this.terminals.set(id, termWidget);
+                        termWidget.onDidClosed(new TerminalDisposable(this.extProxy, id));
+                    }
+                    resolve(id);
+                })
+                .catch(err => {
+                    console.log("Failed to start terminal");
+                    reject(err);
+                });
+            })
+            .catch(err => {
+                console.log("Failed to create terminal widget with predefined options ", err);
+                reject(err);
+            });
+        });
     }
 
     $sendText(id: number, text: string, addNewLine?: boolean | undefined): void {
