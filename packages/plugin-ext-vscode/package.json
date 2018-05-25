@@ -1,25 +1,16 @@
 {
-  "name": "@theia/plugin-ext",
+  "name": "@theia/plugin-ext-vscode",
   "version": "0.3.10",
-  "description": "Theia - Plugin Extension",
-  "main": "lib/common/index.js",
-  "typings": "lib/common/index.d.ts",
+  "description": "Theia - Plugin Extension for VsCode",
   "dependencies": {
-    "@theia/core": "^0.3.10",
-    "@theia/filesystem": "^0.3.10",
-    "@theia/workspace": "^0.3.10",
-    "@theia/plugin": "^0.3.10",
-    "decompress": "^4.2.0",
-    "ps-tree": "1.1.0"
+    "@theia/plugin-ext": "^0.3.10"
   },
   "publishConfig": {
     "access": "public"
   },
   "theiaExtensions": [
     {
-      "backend": "lib/plugin-ext-backend-module",
-      "backendElectron": "lib/plugin-ext-backend-electron-module",
-      "frontend": "lib/plugin-ext-frontend-module"
+      "backend": "lib/node/plugin-vscode-backend-module"
     }
   ],
   "keywords": [
@@ -47,8 +38,7 @@
     "docs": "theiaext docs"
   },
   "devDependencies": {
-    "@theia/ext-scripts": "^0.3.10",
-    "@types/decompress": "^4.2.2"
+    "@theia/ext-scripts": "^0.3.10"
   },
   "nyc": {
     "extends": "../../configs/nyc.json"

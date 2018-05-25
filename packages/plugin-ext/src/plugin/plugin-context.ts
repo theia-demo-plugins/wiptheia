@@ -14,12 +14,14 @@ import { RPCProtocol } from '../api/rpc-protocol';
 import { getPluginId } from '../common/plugin-protocol';
 import { Disposable } from './types-impl';
 import { MessageRegistryExt } from './message-registry';
+import { WindowStateExtImpl } from './window-state';
 import { TerminalServiceExtImpl } from './terminal-ext';
 
 export function createAPI(rpc: RPCProtocol): typeof theia {
     const commandRegistryExt = rpc.set(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT, new CommandRegistryImpl(rpc));
     const quickOpenExt = rpc.set(MAIN_RPC_CONTEXT.QUICK_OPEN_EXT, new QuickOpenExtImpl(rpc));
     const messageRegistryExt = new MessageRegistryExt(rpc);
+    const windowStateExt = rpc.set(MAIN_RPC_CONTEXT.WINDOW_STATE_EXT, new WindowStateExtImpl(rpc));
     const terminalExt = rpc.set(MAIN_RPC_CONTEXT.TERMINAL_EXT, new TerminalServiceExtImpl(rpc));
 
     const commands: typeof theia.commands = {
@@ -42,20 +44,28 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
             return quickOpenExt.showQuickPick(items, options, token);
         },
         showInformationMessage(message: string,
-                               optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
-                               ...items: any[]): PromiseLike<any> {
+            optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
+            ...items: any[]): PromiseLike<any> {
             return messageRegistryExt.showInformationMessage(message, optionsOrFirstItem, items);
         },
         showWarningMessage(message: string,
-                           optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
-                           ...items: any[]): PromiseLike<any> {
+            optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
+            ...items: any[]): PromiseLike<any> {
             return messageRegistryExt.showWarningMessage(message, optionsOrFirstItem, items);
         },
         showErrorMessage(message: string,
-                         optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
-                         ...items: any[]): PromiseLike<any> {
+            optionsOrFirstItem: theia.MessageOptions | string | theia.MessageItem,
+            ...items: any[]): PromiseLike<any> {
             return messageRegistryExt.showErrorMessage(message, optionsOrFirstItem, items);
         },
+
+        get state(): theia.WindowState {
+            return windowStateExt.getWindowState();
+        },
+        onDidChangeWindowState(listener, thisArg?, disposables?): theia.Disposable {
+            return windowStateExt.onDidChangeWindowState(listener, thisArg, disposables);
+        },
+
         createTerminal(nameOrOptions: theia.TerminalOptions | (string | undefined), shellPath?: string, shellArgs?: string[]): theia.Terminal {
             return terminalExt.createTerminal(nameOrOptions, shellPath, shellArgs);
         },
@@ -64,7 +74,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         },
         set onDidCloseTerminal(event: theia.Event<theia.Terminal>) {
             terminalExt.onDidCloseTerminal = event;
-        }
+        },
     };
 
     return <typeof theia>{

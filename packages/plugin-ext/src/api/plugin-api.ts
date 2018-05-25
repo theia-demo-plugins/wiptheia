@@ -6,12 +6,12 @@
  */
 import { createProxyIdentifier, ProxyIdentifier } from './rpc-protocol';
 import * as theia from '@theia/plugin';
-import { PluginLifecycle, PluginModel } from '../common/plugin-protocol';
+import { PluginLifecycle, PluginModel, PluginMetadata } from '../common/plugin-protocol';
 
 export interface HostedPluginManagerExt {
-    $initialize(contextPath: string): void;
-    $loadPlugin(plugin: Plugin): void;
-    $stopPlugin(): PromiseLike<void>;
+    $initialize(contextPath: string, pluginMedata: PluginMetadata): void;
+    $loadPlugin(contextPath: string, plugin: Plugin): void;
+    $stopPlugin(contextPath: string): PromiseLike<void>;
 }
 
 export interface Plugin {
@@ -92,16 +92,22 @@ export interface QuickOpenMain {
     $input(options: theia.InputBoxOptions, validateInput: boolean): PromiseLike<string>;
 }
 
+export interface WindowStateExt {
+    $onWindowStateChanged(focus: boolean): void;
+}
+
 export const PLUGIN_RPC_CONTEXT = {
     COMMAND_REGISTRY_MAIN: <ProxyIdentifier<CommandRegistryMain>>createProxyIdentifier<CommandRegistryMain>('CommandRegistryMain'),
     QUICK_OPEN_MAIN: createProxyIdentifier<QuickOpenMain>('QuickOpenMain'),
     MESSAGE_REGISTRY_MAIN: <ProxyIdentifier<MessageRegistryMain>>createProxyIdentifier<MessageRegistryMain>('MessageRegistryMain'),
-    TERMINAL_MAIN: createProxyIdentifier<TerminalServiceMain>("TerminalServiceMain")
+    TERMINAL_MAIN: createProxyIdentifier<TerminalServiceMain>("TerminalServiceMain"),
 };
 
 export const MAIN_RPC_CONTEXT = {
     HOSTED_PLUGIN_MANAGER_EXT: createProxyIdentifier<HostedPluginManagerExt>('HostedPluginManagerExt'),
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
     QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
-    TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt")
+    WINDOW_STATE_EXT: createProxyIdentifier<WindowStateExt>('WindowStateExt'),
+    QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
+    TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt"),
 };

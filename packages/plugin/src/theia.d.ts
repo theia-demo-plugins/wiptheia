@@ -305,6 +305,16 @@ declare module '@theia/plugin' {
     }
 
     /**
+     * Represents the state of a window.
+     */
+    export interface WindowState {
+        /**
+         * Whether the current window is focused.
+         */
+        readonly focused: boolean;
+    }
+
+    /**
      * Common namespace for dealing with window and editor, showing messages and user input.
      */
     export namespace window {
@@ -448,6 +458,19 @@ declare module '@theia/plugin' {
          * @return A promise that resolves to the selected item or `undefined` when being dismissed.
          */
         export function showErrorMessage<T extends MessageItem>(message: string, options: MessageOptions, ...items: T[]): PromiseLike<T | undefined>;
+
+        /**
+         * Represents the current window's state.
+         *
+         * @readonly
+         */
+        export let state: WindowState;
+
+        /**
+         * An event which fires when the focus state of the current window changes.
+         * The value of the event represents whether the window is focused.
+         */
+        export const onDidChangeWindowState: Event<WindowState>;
 
         export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
         export const onDidCloseTerminal: Event<Terminal>;
