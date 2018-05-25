@@ -6,9 +6,24 @@
  */
 import { TerminalWidgetOptions, TerminalWidget } from "./terminal-model";
 
+/**
+ * Service for manipulation terminal widgets.
+ */
 export const TerminalService = Symbol("TerminalService");
 export interface TerminalService {
+    /**
+     * Create new terminal with predefined options;
+     * @param options - terminal options
+     */
     newTerminal(options: TerminalWidgetOptions): Promise<TerminalWidget>;
+    /**
+     * Display new terminal widget on the bottom panel.
+     * @param termWidget - widget to attach to the bottom panel.
+     */
     activateWidget(termWidget: TerminalWidget): void;
+    /**
+     * Wide panel where is located create terminal widget.
+     * @param termWidget - terminal widget to hide.
+     */
     collapseWidget(termWidget: TerminalWidget): void;
 }
