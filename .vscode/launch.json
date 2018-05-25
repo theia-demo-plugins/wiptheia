@@ -55,8 +55,7 @@
                 "--no-app-auto-install"
             ],
             "env": {
-                "NODE_ENV": "development",
-                "HOSTED_PLUGIN": "/home/user/projects/theia-frontend-plugin/"
+                "NODE_ENV": "development"
             },
             "sourceMaps": true,
             "outFiles": [
