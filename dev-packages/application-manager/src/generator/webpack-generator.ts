@@ -34,7 +34,7 @@ const outputPath = path.resolve(__dirname, 'lib');
 const { mode }  = yargs.option('mode', {
     description: "Mode to use",
     choices: ["development", "production"],
-    default: "development"
+    default: "production"
 }).argv;
 const development = mode === 'development';${this.ifMonaco(() => `
 
