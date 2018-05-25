@@ -108,6 +108,5 @@ export const MAIN_RPC_CONTEXT = {
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
     QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
     WINDOW_STATE_EXT: createProxyIdentifier<WindowStateExt>('WindowStateExt'),
-    QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
     TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt"),
 };
