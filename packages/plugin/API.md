@@ -158,7 +158,7 @@ terminal.processId.then(id => {
         }
     }, id);
 });
-````
+```
 
 #### Window State API
 

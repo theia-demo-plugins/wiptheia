@@ -34,7 +34,7 @@ export default new ContainerModule(bind => {
             const child = new Container({ defaultScope: 'Singleton' });
             child.parent = ctx.container;
             const counter = terminalNum++;
-            const id = options.id || 'terminal-' + counter;
+            const domId = options.id || 'terminal-' + counter;
             const widgetOptions: TerminalWidgetOptions = {
                 title: 'Terminal ' + counter,
                 overrideTitle: true,
@@ -42,7 +42,7 @@ export default new ContainerModule(bind => {
                 ...options
             };
             child.bind(TerminalWidgetOptions).toConstantValue(widgetOptions);
-            child.bind("terminal-id").toConstantValue(id);
+            child.bind("terminal-dom-id").toConstantValue(domId);
             return child.get(TerminalWidget);
         }
     }));

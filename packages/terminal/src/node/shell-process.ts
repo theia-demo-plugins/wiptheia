@@ -37,8 +37,7 @@ function getRootPath(rootURI?: string): string {
 }
 
 function setUpEnvVariables(optionsEnv?:  { [key: string]: string | null }): NodeJS.ProcessEnv {
-    const prEnv: NodeJS.ProcessEnv = process.env;
-    // todo check and don't broke global env variables, create copy if needed
+    const prEnv: NodeJS.ProcessEnv = {...process.env};
     if (optionsEnv) {
         for (const envName of Object.keys(optionsEnv)) {
             const envValue = optionsEnv[envName];

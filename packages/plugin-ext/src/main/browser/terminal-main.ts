@@ -27,6 +27,8 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
     private readonly terminalService: TerminalService;
     protected readonly terminals = new Map<number, TerminalWidget>();
     private readonly extProxy: TerminalServiceExt;
+    private terminalNumber = 0;
+    private readonly TERM_ID_PREFIX = "plugin-terminal-";
 
     constructor(container: interfaces.Container, rpc: RPCProtocol) {
         this.terminalService = container.get(TerminalService);
@@ -34,6 +36,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
     }
 
     $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
+        const counter = this.terminalNumber;
         const termWidgetOptions: TerminalWidgetOptions = {
             title: options.name,
             shellPath: options.shellPath,
@@ -42,6 +45,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
             env: options.env,
             destroyTermOnClose: true,
             overrideTitle: false,
+            id: this.TERM_ID_PREFIX + counter
         };
         return new Promise<number>((resolve, reject) => {
             this.terminalService.newTerminal(termWidgetOptions)

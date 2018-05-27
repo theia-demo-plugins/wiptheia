@@ -72,7 +72,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     @inject(ShellTerminalServerProxy) protected readonly shellTerminalServer: ShellTerminalServerProxy;
     @inject(TerminalWatcher) protected readonly terminalWatcher: TerminalWatcher;
     @inject(ILogger) @named('terminal') protected readonly logger: ILogger;
-    @inject("terminal-id") public readonly id: string;
+    @inject("terminal-dom-id") public readonly id: string;
 
     protected readonly onDidClosedActions = new DisposableCollection();
     protected readonly toDisposeOnConnect = new DisposableCollection();
@@ -161,7 +161,6 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
             /* This is a workaround to issue #879 */
             this.restored = true;
             this.title.label = state.titleLabel;
-            console.log("restore info", state.cols, state.rows);
             this.cols = state.cols;
             this.rows = state.rows;
             this.term.resize(state.cols, state.rows);
@@ -387,13 +386,13 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
 
     sendText(text: string, addNewLine?: boolean): void {
         this.waitForConnection.promise.then(() => {
-            console.log("send text", text);
+            text = text.replace(/\r?\n/g, '\r');
+
+            if (addNewLine && text.charAt(text.length - 1) !== '\r') {
+                text += '\r';
+            }
+
             this.connection.sendRequest('write', text);
-            // if (addNewLine) {
-            //     this.term.writeln(text);
-            // } else {
-            //     this.term.write(text);
-            // }
         });
     }
 
@@ -411,7 +410,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
     }
 
     private async doResize() {
-        await Promise.all([this.waitForTermOpened.promise]); // this.waitForResized.promise,
+        await Promise.all([this.waitForTermOpened.promise]);
 
         const geo = this.term.proposeGeometry();
         this.cols = geo.cols;
