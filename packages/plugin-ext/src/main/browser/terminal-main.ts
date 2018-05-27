@@ -35,7 +35,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
         this.extProxy = rpc.getProxy(MAIN_RPC_CONTEXT.TERMINAL_EXT);
     }
 
-    $createTerminal(options: TerminalOptions, shellPath?: string, shellArgs?: string[]): Promise<number> {
+    $createTerminal(options: TerminalOptions): Promise<number> {
         const counter = this.terminalNumber;
         const termWidgetOptions: TerminalWidgetOptions = {
             title: options.name,

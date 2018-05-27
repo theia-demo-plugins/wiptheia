@@ -31,7 +31,7 @@ export class TerminalServiceExtImpl implements TerminalServiceExt {
             };
         }
 
-        const terminal = new TerminalExtImpl(this.proxy, options.name || "test"); // todo autogenerate terminal name if it's was not defined
+        const terminal = new TerminalExtImpl(this.proxy, options.name || "Terminal");
         terminal.create(options, shellPath, shellArgs);
         terminal.processId.then(id => {
             this.terminals.set(id, terminal);

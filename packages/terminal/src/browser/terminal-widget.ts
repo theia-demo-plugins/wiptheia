@@ -243,7 +243,7 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
      * If id is provided attach to the terminal for this id.
      */
     public async start(id?: number): Promise<number> {
-        this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id); // todo await
+        this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id);
         if (typeof this.terminalId === "number") {
             this.connectTerminalProcess();
         }
