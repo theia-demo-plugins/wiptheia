@@ -37,10 +37,37 @@ export interface TerminalServiceExt {
 }
 
 export interface TerminalServiceMain {
+    /**
+     * Create new Terminal with Terminal options.
+     * @param options - object with parameters to create new terminal.
+     */
     $createTerminal(options: theia.TerminalOptions): PromiseLike<number>;
+
+    /**
+     * Send text to the terminal by id.
+     * @param id - terminal id.
+     * @param text - text content.
+     * @param addNewLine - in case true - add new line after the text, otherwise - don't apply new line.
+     */
     $sendText(id: number, text: string, addNewLine?: boolean): void;
+
+    /**
+     * Show terminal on the UI panel.
+     * @param id - terminal id.
+     * @param preserveFocus - set terminal focus in case true value, and don't set focus otherwise.
+     */
     $show(id: number, preserveFocus?: boolean): void;
+
+    /**
+     * Hide UI panel where is located terminal widget.
+     * @param id - terminal id.
+     */
     $hide(id: number): void;
+
+    /**
+     * Distroy terminal.
+     * @param id - terminal id.
+     */
     $dispose(id: number): void;
 }
 

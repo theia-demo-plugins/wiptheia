@@ -185,35 +185,71 @@ declare module '@theia/plugin' {
         validateInput?(value: string): string | undefined | null | PromiseLike<string | undefined | null>;
     }
 
-
-    // todo docs
+    /**
+     * Definition of the terminal emulator.
+     */
     export interface Terminal {
+        /**
+         * Human readable represantation of the terminal in the UI.
+         */
         readonly name: string;
 
+        /**
+         * Terminal id.
+         */
         readonly processId: Thenable<number>;
 
+        /**
+         * Send text to the terminal.
+         * @param text - text content.
+         * @param addNewLine - in case true - apply new line after the text, otherwise don't apply new line.
+         */
         sendText(text: string, addNewLine?: boolean): void;
 
+        /**
+         * Show created terminal on the UI.
+         * @param preserveFocus - in case true - set up focus on the terminal widget, otherwise show terminal without focus.
+         */
         show(preserveFocus?: boolean): void;
 
+        /**
+         * Hide terminal panel.
+         */
         hide(): void;
 
+        /**
+         * Distroy terminal.
+         */
         dispose(): void;
     }
 
-    interface Thenable<T> extends PromiseLike<T> {
-    }
-
+    /**
+     * Options to create terminal widget.
+     */
     export interface TerminalOptions {
-
+        /**
+         * Human readable represantation of the terminal in the UI.
+         */
 		name?: string;
 
-		shellPath?: string;
-
+        /**
+         * Path to the executable shell. For example "/bin/bash", "bash", "sh".
+         */
+        shellPath?: string;
+        
+        /**
+         * Arguments to configure executable shell. For example ["-l"] - run shell without login.
+         */
         shellArgs?: string[];
 
+        /**
+         * Current working directory.
+         */
 		cwd?: string;
 
+        /**
+         * Environment variables for terminal in format key - value.
+         */
 		env?: { [key: string]: string | null };
     }
 
@@ -472,8 +508,23 @@ declare module '@theia/plugin' {
          */
         export const onDidChangeWindowState: Event<WindowState>;
 
+        /**
+         * Create new terminal.
+         * @param name - terminal name to display on the UI.
+         * @param shellPath - path to the executable shell. For example "/bin/bash", "bash", "sh".
+         * @param shellArgs - arguments to configure executable shell. For example ["-l"] - run shell without login.
+         */
         export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
+
+        /**
+         * Event which fires when terminal did closed. Event value contains closed terminal definition.
+         */
         export const onDidCloseTerminal: Event<Terminal>;
+
+        /**
+         * Create new terminal with predefined options.
+         * @param - terminal options.
+         */
         export function createTerminal(options: TerminalOptions): Terminal;
     }
 }

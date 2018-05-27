@@ -12,23 +12,23 @@ import { Disposable } from "../../common";
  */
 
 /**
- * Terminal options.
+ * Terminal widget options.
  */
 export const TerminalWidgetOptions = Symbol("TerminalWidgetOptions");
 export interface TerminalWidgetOptions {
 
     /**
-     * Human readalbe terminal representation on Ui.
+     * Human readalbe terminal representation on the UI.
      */
     readonly title?: string ;
 
     /**
-     * Path to the executable shell.
+     * Path to the executable shell. For example: "/bin/bash", "bash", "sh".
      */
     readonly shellPath?: string;
 
     /**
-     * Shell arugments to exectualbe shell, for example: ["-l"] - without login.
+     * Shell arguments to executable shell, for example: ["-l"] - without login.
      */
     readonly shellArgs?: string[];
 
@@ -38,29 +38,31 @@ export interface TerminalWidgetOptions {
     readonly cwd?: string;
 
     /**
-     * Enviroment variables for terminal.
+     * Environment variables for terminal.
      */
     readonly env?: { [key: string]: string | null };
 
     /**
-     * In case "destroyTermOnCloseKill" is true - terminal process will be destroyed on close terminal widget, otherwise will be keeped
+     * In case "destroyTermOnClose" is true - terminal process will be destroyed on close terminal widget, otherwise will be keeped
      * alive.
      */
     destroyTermOnClose?: boolean;
 
     /**
-     * Terminal server side can send to the client "terminal title" to dispaly this value on the UI. If
-     * overrideTitle = true, we skip this title and use our own custom title defined by "title" argument.
-     * If overrideTitle = false, we are using terminal title from server side.
+     * Terminal server side can send to the client "terminal title" to display this value on the UI. If
+     * overrideTitle = true, we skip this title and use our own custom title, defined by "title" argument.
+     * If overrideTitle = false, we are using terminal title from the server side.
      */
     overrideTitle?: boolean;
 
-    /** Terminal id. Should be unique for all DOM. */
+    /**
+     * Terminal id. Should be unique for all DOM.
+     */
     id?: string;
 }
 
 /**
- * Describes terminal UI widget.
+ * Terminal UI widget.
  */
 export const TerminalWidget = Symbol("TerminalWidget");
 export interface TerminalWidget {
@@ -68,19 +70,22 @@ export interface TerminalWidget {
      * Start terminal and return terminal id.
      */
     start(): Promise<number>;
+
     /**
      * Send text to the terminal server.
-     * @param text - content for server.
-     * @param addNewLine - apply new line after text
+     * @param text - text content.
+     * @param addNewLine - apply new line after text.
      */
     sendText(text: string, addNewLine?: boolean): void;
+
     /**
      * Destroy terminal widget.
      */
     dispose(): void;
+
     /**
-     * Apply disposable object where is described actions to do when terminal is closed.
-     * @param dispose disposeble actions;
+     * Apply disposable object where are described actions to do when terminal is closed.
+     * @param dispose disposable actions.
      */
     onDidClosed(dispose: Disposable): void;
 }
