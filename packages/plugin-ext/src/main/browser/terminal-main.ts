@@ -36,7 +36,7 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
     }
 
     $createTerminal(options: TerminalOptions): Promise<number> {
-        const counter = this.terminalNumber;
+        const counter = this.terminalNumber++;
         const termWidgetOptions: TerminalWidgetOptions = {
             title: options.name,
             shellPath: options.shellPath,
