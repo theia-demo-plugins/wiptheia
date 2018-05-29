@@ -15,7 +15,7 @@ import { TaskWatcher } from '../common/task-watcher';
 import { MessageService } from '@theia/core/lib/common/message-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser/workspace-service';
 import { TaskConfigurations, TaskConfigurationClient } from './task-configurations';
-import { TerminalWidget } from '@theia/terminal/lib/browser/terminal-widget';
+import { TerminalWidgetImpl } from '@theia/terminal/lib/browser/terminal-widget';
 import { VariableResolverService } from "@theia/variable-resolver/lib/browser";
 import { ProcessOptions } from "@theia/process/lib/node";
 
@@ -159,7 +159,7 @@ export class TaskService implements TaskConfigurationClient {
 
     async attach(terminalId: number, taskId: number): Promise<void> {
         // create terminal widget to display task's execution output
-        const widget = <TerminalWidget>await this.widgetManager.getOrCreateWidget(
+        const widget = <TerminalWidgetImpl>await this.widgetManager.getOrCreateWidget(
             TERMINAL_WIDGET_FACTORY_ID,
             <TerminalWidgetFactoryOptions>{
                 created: new Date().toString(),

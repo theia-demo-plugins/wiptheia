@@ -17,9 +17,11 @@ export const shellTerminalPath = '/services/shell-terminal';
 
 export interface IShellTerminalServerOptions extends IBaseTerminalServerOptions {
     shell?: string,
+    args?: string[],
     rootURI?: string,
     cols?: number,
-    rows?: number
+    rows?: number,
+    env?: { [key: string]: string | null };
 }
 
 export const ShellTerminalServerProxy = Symbol('ShellTerminalServerProxy');
