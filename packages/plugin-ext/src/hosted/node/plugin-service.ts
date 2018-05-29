@@ -107,7 +107,7 @@ export class HostedPluginServerImpl implements HostedPluginServer {
     }
 
     terminateHostedPluginInstance(): Promise<void> {
-        return Promise.resolve(this.hostedPluginManager.terminate());
+        return this.hostedPluginManager.terminate();
     }
 
     isHostedTheiaRunning(): Promise<boolean> {

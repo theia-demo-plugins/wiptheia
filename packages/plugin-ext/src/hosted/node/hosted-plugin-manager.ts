@@ -9,6 +9,7 @@ import { inject, injectable, named } from "inversify";
 import * as cp from "child_process";
 import * as fs from "fs";
 import * as net from "net";
+import * as http from "http";
 import URI from '@theia/core/lib/common/uri';
 import { ContributionProvider } from "@theia/core/lib/common/contribution-provider";
 import { HostedPluginUriPostProcessor, HostedPluginUriPostProcessorSymbolName } from "./hosted-plugin-uri-postprocessor";
@@ -38,7 +39,7 @@ export interface HostedPluginManager {
      * Terminates hosted plugin instance.
      * Throws error if instance is not running.
      */
-    terminate(): void;
+    terminate(): Promise<void>;
 
     /**
      * Returns uri where hosted instance is run.
@@ -66,19 +67,20 @@ delete PROCESS_OPTIONS.env.ELECTRON_RUN_AS_NODE;
 export abstract class AbstractHostedPluginManager implements HostedPluginManager {
     protected hostedInstanceProcess: cp.ChildProcess;
     protected processOptions: cp.SpawnOptions;
-    protected isPluginRunnig: boolean = false;
+    protected isInstanceRunnig: boolean = false;
+    protected port: number;
     protected instanceUri: URI;
 
     constructor() {
-        this.isPluginRunnig = false;
+        this.isInstanceRunnig = false;
     }
 
     isRunning(): boolean {
-        return this.isPluginRunnig;
+        return this.isInstanceRunnig;
     }
 
     async run(pluginUri: URI, port?: number): Promise<URI> {
-        if (this.isPluginRunnig) {
+        if (this.isInstanceRunnig) {
             throw new Error('Hosted plugin instance is already running.');
         }
 
@@ -97,13 +99,42 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
 
         this.instanceUri = await this.postProcessInstanceUri(
             await this.runHostedPluginTheiaInstance(command, processOptions));
+        await this.ensureUriAvailable(this.instanceUri);
         return this.instanceUri;
     }
 
-    terminate(): void {
-        if (this.isPluginRunnig) {
-            processTree(this.hostedInstanceProcess.pid, (err: Error, children: Array<any>) => {
-                cp.spawn('kill', ['SIGTERM'].concat(children.map((p: any) => p.PID)));
+    /**
+     * Pings uri until it responses with OK status.
+     * Throws an exception if maximal attepts is reached.
+     *
+     * @param uri uri to ping
+     */
+    protected ensureUriAvailable(uri: URI): Promise<void> {
+        return new Promise(async (resolve) => {
+            let isReady = false;
+            for (let i = 0; i < 10 && !isReady; i++) {
+                http.get(uri.toString(), () => {
+                    resolve();
+                    isReady = true;
+                });
+                if (!isReady) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+
+            if (!isReady) {
+                throw new Error('Cannot reach ' + uri);
+            }
+        });
+    }
+
+    terminate(): Promise<void> {
+        if (this.isInstanceRunnig) {
+            return new Promise<void>(resolve => {
+                processTree(this.hostedInstanceProcess.pid, (err: Error, children: Array<any>) => {
+                    cp.spawnSync('kill', ['SIGTERM'].concat(children.map((p: any) => p.PID)));
+                    resolve();
+                });
             });
         } else {
             throw new Error('Hosted plugin instance is not running.');
@@ -111,7 +142,7 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
     }
 
     getInstanceURI(): URI {
-        if (this.isPluginRunnig) {
+        if (this.isInstanceRunnig) {
             return this.instanceUri;
         }
         throw new Error('Hosted plugin instance is not running.');
@@ -137,6 +168,7 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
         if (port) {
             await this.validatePort(port);
             command.push('--port=' + port);
+            this.port = port;
         }
         return command;
     }
@@ -146,7 +178,7 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
     }
 
     protected runHostedPluginTheiaInstance(command: string[], options: cp.SpawnOptions): Promise<URI> {
-        this.isPluginRunnig = true;
+        this.isInstanceRunnig = true;
         return new Promise((resolve, reject) => {
             let started = false;
             const outputListener = (data: string | Buffer) => {
@@ -160,13 +192,13 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
             };
 
             this.hostedInstanceProcess = cp.spawn(command.shift()!, command, options);
-            this.hostedInstanceProcess.on('error', () => { this.isPluginRunnig = false; });
-            this.hostedInstanceProcess.on('exit', () => { this.isPluginRunnig = false; });
+            this.hostedInstanceProcess.on('error', () => { this.isInstanceRunnig = false; });
+            this.hostedInstanceProcess.on('exit', () => { this.isInstanceRunnig = false; });
             this.hostedInstanceProcess.stdout.addListener('data', outputListener);
             setTimeout(() => {
                 if (!started) {
                     this.hostedInstanceProcess.kill();
-                    this.isPluginRunnig = false;
+                    this.isInstanceRunnig = false;
                     reject('Timeout.');
                 }
             }, HOSTED_INSTANCE_START_TIMEOUT_MS);
@@ -179,7 +211,11 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
         }
 
         if (! await this.isPortFree(port)) {
-            throw new Error('Port ' + port + ' is already in use.');
+            // wait a bit and retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (! await this.isPortFree(port)) {
+                throw new Error('Port ' + port + ' is already in use.');
+            }
         }
     }
 

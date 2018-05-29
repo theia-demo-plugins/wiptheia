@@ -48,10 +48,20 @@ export class HostedPluginManagerClient {
         }
         try {
             this.messageService.info('Starting hosted instance server ...');
-            await this.doRunRequest(this.pluginLocation);
+            this.pluginInstanceUri = await this.hostedPluginServer.runHostedPluginInstance(this.pluginLocation.toString());
+            if (!isNative) {
+                // Open a new tab in case of browser
+                try {
+                    this.windowService.openNewWindow(this.pluginInstanceUri);
+                } catch (err) {
+                    this.messageService.warn('Your browser prevented opening of new tab. You can do it manually: ' + this.pluginInstanceUri);
+                }
+            }
             this.messageService.info('Hosted instance is running at: ' + this.pluginInstanceUri);
         } catch (error) {
-            this.messageService.error('Failed to run hosted plugin instance: ' + this.getErrorMessage(error));
+            const errorMassage = 'Failed to run hosted plugin instance: ' + this.getErrorMessage(error);
+            this.messageService.error(errorMassage);
+            console.error(errorMassage);
         }
     }
 
@@ -67,22 +77,7 @@ export class HostedPluginManagerClient {
     async restart(): Promise<void> {
         if (await this.hostedPluginServer.isHostedTheiaRunning()) {
             await this.stop();
-
-            this.messageService.info('Starting hosted instance server ...');
-            // It takes some time before OS released all resources e.g. port.
-            // Keeping tries to run hosted instance with delay.
-            let lastError;
-            for (let tries = 0; tries < 15; tries++) {
-                try {
-                    await this.doRunRequest(this.pluginLocation!);
-                    this.messageService.info('Hosted instance is running at: ' + this.pluginInstanceUri);
-                    return;
-                } catch (error) {
-                    lastError = error;
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-            }
-            this.messageService.error('Failed to run hosted plugin instance: ' + this.getErrorMessage(lastError));
+            await this.start();
         } else {
             this.messageService.warn('Hosted Plugin instance is not running.');
         }
@@ -114,25 +109,6 @@ export class HostedPluginManagerClient {
                 this.messageService.info('Plugin folder is set to: ' + node.uri.toString());
             } else {
                 this.messageService.error('Specified folder does not contain valid plugin.');
-            }
-        }
-    }
-
-    /**
-     * Send run command to backend. Throws an error if start failed.
-     * Sets hosted instance uri into pluginInstanceUri field.
-     *
-     * @param pluginLocation uri to plugin binaries
-     */
-    protected async doRunRequest(pluginLocation: URI): Promise<void> {
-        const uri = await this.hostedPluginServer.runHostedPluginInstance(pluginLocation.toString());
-        this.pluginInstanceUri = uri;
-        if (!isNative) {
-            // Open a new tab in case of browser
-            try {
-                this.windowService.openNewWindow(uri);
-            } catch (err) {
-                this.messageService.warn('Your browser prevented opening of new tab. You can do it manually: ' + uri);
             }
         }
     }

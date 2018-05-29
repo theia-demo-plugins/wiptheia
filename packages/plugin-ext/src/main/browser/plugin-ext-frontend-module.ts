@@ -11,7 +11,7 @@ import { WebSocketConnectionProvider } from '@theia/core/lib/browser/messaging';
 import { PluginWorker } from './plugin-worker';
 import { HostedPluginSupport } from "../../hosted/browser/hosted-plugin";
 import { HostedPluginWatcher } from "../../hosted/browser/hosted-plugin-watcher";
-import { HostedPluginManagerClient } from "./plugin-manager-client";
+import { HostedPluginManagerClient } from "../../hosted/browser/hosted-plugin-manager-client";
 import { PluginApiFrontendContribution } from "./plugin-frontend-contribution";
 import { setUpPluginApi } from "./main-context";
 import { HostedPluginServer, hostedServicePath } from "../../common/plugin-protocol";
