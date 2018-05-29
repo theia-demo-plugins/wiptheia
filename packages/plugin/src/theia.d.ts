@@ -253,6 +253,9 @@ declare module '@theia/plugin' {
 		env?: { [key: string]: string | null };
     }
 
+    interface Thenable<T> extends PromiseLike<T> {
+    }
+
     /**
      * Namespace for dealing with commands. In short, a command is a function with a
      * unique identifier. The function is sometimes also called _command handler_.
