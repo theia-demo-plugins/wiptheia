@@ -70,14 +70,18 @@ export class TerminalServiceMainImpl implements TerminalServiceMain {
         });
     }
 
-    $sendText(id: number, text: string, addNewLine?: boolean | undefined): void {
+    $sendText(id: number, text: string, addNewLine?: boolean): void {
         const termWidget = this.terminals.get(id);
         if (termWidget) {
-            termWidget.sendText(text, addNewLine);
+            text = text.replace(/\r?\n/g, '\r');
+            if (addNewLine && text.charAt(text.length - 1) !== '\r') {
+                text += '\r';
+            }
+            termWidget.sendText(text);
         }
     }
 
-    $show(id: number, preserveFocus?: boolean | undefined): void {
+    $show(id: number, preserveFocus?: boolean): void {
         const termWidget = this.terminals.get(id);
         if (termWidget) {
             this.terminalService.activateWidget(termWidget);

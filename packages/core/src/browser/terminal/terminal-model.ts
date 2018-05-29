@@ -74,9 +74,8 @@ export interface TerminalWidget {
     /**
      * Send text to the terminal server.
      * @param text - text content.
-     * @param addNewLine - apply new line after text.
      */
-    sendText(text: string, addNewLine?: boolean): void;
+    sendText(text: string): void;
 
     /**
      * Destroy terminal widget.

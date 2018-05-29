@@ -384,14 +384,8 @@ export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, St
         }
     }
 
-    sendText(text: string, addNewLine?: boolean): void {
+    sendText(text: string): void {
         this.waitForConnection.promise.then(() => {
-            text = text.replace(/\r?\n/g, '\r');
-
-            if (addNewLine && text.charAt(text.length - 1) !== '\r') {
-                text += '\r';
-            }
-
             this.connection.sendRequest('write', text);
         });
     }
