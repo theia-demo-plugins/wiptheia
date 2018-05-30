@@ -230,7 +230,7 @@ declare module '@theia/plugin' {
         /**
          * Human readable representation of the terminal in the UI.
          */
-		name?: string;
+        name?: string;
 
         /**
          * Path to the executable shell. For example "/bin/bash", "bash", "sh".
@@ -245,12 +245,12 @@ declare module '@theia/plugin' {
         /**
          * Current working directory.
          */
-		cwd?: string;
+        cwd?: string;
 
         /**
          * Environment variables for terminal in format key - value.
          */
-		env?: { [key: string]: string | null };
+        env?: { [key: string]: string | null };
     }
 
     interface Thenable<T> extends PromiseLike<T> {
