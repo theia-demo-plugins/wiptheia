@@ -9,7 +9,8 @@ import { ContainerModule, Container } from 'inversify';
 import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
 import { KeybindingContribution, WebSocketConnectionProvider, WidgetFactory, KeybindingContext } from '@theia/core/lib/browser';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
-import { TerminalWidget, TerminalWidgetOptions, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget';
+import { TerminalWidgetImpl, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget';
+import { TerminalWidget, TerminalWidgetOptions } from '@theia/core/lib/browser/terminal/terminal-model';
 import { ITerminalServer, terminalPath } from '../common/terminal-protocol';
 import { TerminalWatcher } from '../common/terminal-watcher';
 import { IShellTerminalServer, shellTerminalPath, ShellTerminalServerProxy } from '../common/shell-terminal-protocol';
@@ -18,11 +19,12 @@ import { createCommonBindings } from '../common/terminal-common-module';
 
 import '../../src/browser/terminal.css';
 import 'xterm/lib/xterm.css';
+import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
 
 export default new ContainerModule(bind => {
     bind(KeybindingContext).to(TerminalActiveContext).inSingletonScope();
 
-    bind(TerminalWidget).toSelf().inTransientScope();
+    bind(TerminalWidget).to(TerminalWidgetImpl).inTransientScope();
     bind(TerminalWatcher).toSelf().inSingletonScope();
 
     let terminalNum = 0;
@@ -32,18 +34,21 @@ export default new ContainerModule(bind => {
             const child = new Container({ defaultScope: 'Singleton' });
             child.parent = ctx.container;
             const counter = terminalNum++;
-            child.bind(TerminalWidgetOptions).toConstantValue({
-                id: 'terminal-' + counter,
-                caption: 'Terminal ' + counter,
-                label: 'Terminal ' + counter,
+            const domId = options.id || 'terminal-' + counter;
+            const widgetOptions: TerminalWidgetOptions = {
+                title: 'Terminal ' + counter,
+                overrideTitle: true,
                 destroyTermOnClose: true,
                 ...options
-            });
+            };
+            child.bind(TerminalWidgetOptions).toConstantValue(widgetOptions);
+            child.bind("terminal-dom-id").toConstantValue(domId);
             return child.get(TerminalWidget);
         }
     }));
 
     bind(TerminalFrontendContribution).toSelf().inSingletonScope();
+    bind(TerminalService).to(TerminalFrontendContribution).inSingletonScope();
     for (const identifier of [CommandContribution, MenuContribution, KeybindingContribution]) {
         bind(identifier).toService(TerminalFrontendContribution);
     }

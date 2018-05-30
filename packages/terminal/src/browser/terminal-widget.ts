@@ -16,18 +16,12 @@ import { IBaseTerminalServer } from '../common/base-terminal-protocol';
 import { TerminalWatcher } from '../common/terminal-watcher';
 import { ThemeService } from "@theia/core/lib/browser/theming";
 import { Deferred } from "@theia/core/lib/common/promise-util";
+import { TerminalWidget, TerminalWidgetOptions } from '@theia/core/lib/browser/terminal/terminal-model';
+import { MessageConnection } from 'vscode-jsonrpc';
 
 Xterm.Terminal.applyAddon(require('xterm/lib/addons/fit/fit'));
 
 export const TERMINAL_WIDGET_FACTORY_ID = 'terminal';
-
-export const TerminalWidgetOptions = Symbol("TerminalWidgetOptions");
-export interface TerminalWidgetOptions {
-    id: string,
-    caption: string,
-    label: string
-    destroyTermOnClose: boolean
-}
 
 export interface TerminalWidgetFactoryOptions extends Partial<TerminalWidgetOptions> {
     /* a unique string per terminal */
@@ -52,12 +46,15 @@ interface TerminalCSSProperties {
 }
 
 @injectable()
-export class TerminalWidget extends BaseWidget implements StatefulWidget {
+export class TerminalWidgetImpl extends BaseWidget implements TerminalWidget, StatefulWidget {
 
     private terminalId: number | undefined;
     private term: Xterm.Terminal;
     private cols: number;
     private rows: number;
+
+    private readonly TERMINAL = "Terminal";
+
     protected restored = false;
     protected closeOnDispose = true;
     protected openAfterShow = false;
@@ -66,6 +63,8 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
 
     protected readonly waitForResized = new Deferred<void>();
     protected readonly waitForTermOpened = new Deferred<void>();
+    protected readonly waitForConnection = new Deferred<void>();
+    private connection: MessageConnection;
 
     @inject(WorkspaceService) protected readonly workspaceService: WorkspaceService;
     @inject(WebSocketConnectionProvider) protected readonly webSocketConnectionProvider: WebSocketConnectionProvider;
@@ -73,14 +72,15 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
     @inject(ShellTerminalServerProxy) protected readonly shellTerminalServer: ShellTerminalServerProxy;
     @inject(TerminalWatcher) protected readonly terminalWatcher: TerminalWatcher;
     @inject(ILogger) @named('terminal') protected readonly logger: ILogger;
+    @inject("terminal-dom-id") public readonly id: string;
 
+    protected readonly onDidClosedActions = new DisposableCollection();
     protected readonly toDisposeOnConnect = new DisposableCollection();
 
     @postConstruct()
     protected init(): void {
-        this.id = this.options.id;
-        this.title.caption = this.options.caption;
-        this.title.label = this.options.label;
+        this.title.caption = this.options.title || this.TERMINAL;
+        this.title.label = this.options.title || this.TERMINAL;
         this.title.iconClass = "fa fa-terminal";
 
         if (this.options.destroyTermOnClose === true) {
@@ -118,7 +118,9 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
         }));
 
         this.term.on('title', (title: string) => {
-            this.title.label = title;
+            if (this.options.overrideTitle) {
+                this.title.label = title;
+            }
         });
         if (isFirefox) {
             // The software scrollbars don't work with xterm.js, so we disable the scrollbar if we are on firefox.
@@ -135,6 +137,7 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
         this.toDispose.push(this.terminalWatcher.onTerminalExit(({ terminalId }) => {
             if (terminalId === this.terminalId) {
                 this.title.label = "<terminated>";
+                this.onDidClosedActions.dispose();
             }
         }));
         this.toDispose.push(this.toDisposeOnConnect);
@@ -149,15 +152,18 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
 
     storeState(): object {
         this.closeOnDispose = false;
-        return { terminalId: this.terminalId, titleLabel: this.title.label };
+        return { terminalId: this.terminalId, titleLabel: this.title.label, rows: this.rows, cols: this.cols };
     }
 
     restoreState(oldState: object) {
         if (this.restored === false) {
-            const state = oldState as { terminalId: number, titleLabel: string };
+            const state = oldState as { terminalId: number, titleLabel: string, rows: number, cols: number };
             /* This is a workaround to issue #879 */
             this.restored = true;
             this.title.label = state.titleLabel;
+            this.cols = state.cols;
+            this.rows = state.rows;
+            this.term.resize(state.cols, state.rows);
             this.start(state.terminalId);
         }
     }
@@ -236,14 +242,14 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
      * new terminal widget.
      * If id is provided attach to the terminal for this id.
      */
-    async start(id?: number): Promise<void> {
-        await this.waitForResized.promise;
+    public async start(id?: number): Promise<number> {
         this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id);
         if (typeof this.terminalId === "number") {
-            await this.doResize();
             this.connectTerminalProcess();
         }
+        return this.terminalId || -1;
     }
+
     protected async attachTerminal(id: number): Promise<number | undefined> {
         const terminalId = await this.shellTerminalServer.attach(id);
         if (IBaseTerminalServer.validateId(terminalId)) {
@@ -252,11 +258,24 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
         this.logger.error(`Error attaching to terminal id ${id}, the terminal is most likely gone. Starting up a new terminal instead.`);
         return this.createTerminal();
     }
+
     protected async createTerminal(): Promise<number | undefined> {
-        const root = await this.workspaceService.root;
-        const rootURI = root && root.uri;
+        let rootURI = this.options.cwd;
+        if (!rootURI) {
+            const root = await this.workspaceService.root;
+            rootURI = root && root.uri;
+        }
+
         const { cols, rows } = this;
-        const terminalId = await this.shellTerminalServer.create({ rootURI, cols, rows });
+
+        const terminalId = await this.shellTerminalServer.create({
+            shell: this.options.shellPath,
+            args: this.options.shellArgs,
+            env: this.options.env,
+            rootURI,
+            cols,
+            rows
+        });
         if (IBaseTerminalServer.validateId(terminalId)) {
             return terminalId;
         }
@@ -352,6 +371,8 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
 
                 this.toDisposeOnConnect.push(connection);
                 connection.listen();
+                this.waitForConnection.resolve();
+                this.connection = connection;
             }
         }, { reconnecting: false });
     }
@@ -359,6 +380,12 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
         if (typeof this.terminalId === "number") {
             await this.start(this.terminalId);
         }
+    }
+
+    sendText(text: string): void {
+        this.waitForConnection.promise.then(() => {
+            this.connection.sendRequest('write', text);
+        });
     }
 
     dispose(): void {
@@ -370,8 +397,13 @@ export class TerminalWidget extends BaseWidget implements StatefulWidget {
         super.dispose();
     }
 
+    onDidClosed(dispose: Disposable): void {
+        this.onDidClosedActions.push(dispose);
+    }
+
     private async doResize() {
-        await Promise.all([this.waitForResized.promise, this.waitForTermOpened.promise]);
+        await Promise.all([this.waitForTermOpened.promise]);
+
         const geo = this.term.proposeGeometry();
         this.cols = geo.cols;
         this.rows = geo.rows - 1; // subtract one row for margin

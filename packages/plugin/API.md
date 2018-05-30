@@ -74,6 +74,91 @@ theia.window.showInformationMessage('Information message', 'Btn1', 'Btn2').then(
     console.log("Click button", result);
 });
 ```
+### Terminal
+
+Function to create new terminal with specific arguments:
+
+```javascript
+const terminal = theia.window.createTerminal("Bash terminal", "/bin/bash", shellArgs: ["-l"]);
+```
+
+Where are:
+ - first argument - terminal representation on the UI.
+ - second argument - path to the executable shell.
+ - third argument - arguments to configure executable shell.
+
+You can create terminal with specific options:
+
+```javascript
+const options: theia.TerminalOptions {
+    name: "Bash terminal",
+    shellPath: "/bin/bash";
+    shellArgs: ["-l"];
+    cwd: "/projects";
+    env: { "TERM": "screen" };
+};
+```
+
+Where are:
+ - "shellPath" - path to the executable shell, for example "/bin/bash", "bash", "sh" or so on.
+ - "shellArgs" - shell command arguments, for example without login: "-l". If you defined shell command "/bin/bash" and set up shell arguments "-l" than will be created terminal process with command "/bin/bash -l". And client side will connect to stdin/stdout of this process to interaction with user.
+ - "cwd" - current working directory;
+ - "env"- enviroment variables for terminal process, for example TERM - identifier terminal window capabilities.
+
+Function to create new terminal with defined theia.TerminalOptions described above:
+
+```javascript
+const terminal = theia.window.createTerminal(options);
+```
+
+Created terminal is not attached to the bottom panel. To apply created terminal to the bottom panel use method "show":
+
+```javascript
+terminal.show();
+```
+
+To hide bottom panel with created terminal use method "hide";
+
+```javascript
+terminal.hide();
+```
+
+Send text to the terminal:
+
+```javascript
+terminal.sendText("Hello, Theia!", false);
+```
+
+Where are:
+- first argument - text content.
+- second argument - in case true, terminal will apply new line after the text, otherwise will send only the text.
+
+Distroy terminal:
+
+```javascript
+terminal.dispose();
+```
+
+Subscribe to close terminal event:
+
+```javascript
+theia.window.onDidCloseTerminal((term) => {
+    console.log("Terminal closed ");
+});
+```
+
+Detect destroying terminal by Id:
+
+```javascript
+terminal.processId.then(id => {
+    theia.window.onDidCloseTerminal(async (term) => {
+        const currentId = await term.processId;
+        if (currentId === id) {
+            console.log("Terminal closed ", id);
+        }
+    }, id);
+});
+```
 
 #### Window State API
 

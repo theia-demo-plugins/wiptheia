@@ -32,6 +32,45 @@ export interface CommandRegistryExt {
     $executeCommand<T>(id: string, ...ars: any[]): PromiseLike<T>;
 }
 
+export interface TerminalServiceExt {
+    $terminalClosed(id: number): void;
+}
+
+export interface TerminalServiceMain {
+    /**
+     * Create new Terminal with Terminal options.
+     * @param options - object with parameters to create new terminal.
+     */
+    $createTerminal(options: theia.TerminalOptions): PromiseLike<number>;
+
+    /**
+     * Send text to the terminal by id.
+     * @param id - terminal id.
+     * @param text - text content.
+     * @param addNewLine - in case true - add new line after the text, otherwise - don't apply new line.
+     */
+    $sendText(id: number, text: string, addNewLine?: boolean): void;
+
+    /**
+     * Show terminal on the UI panel.
+     * @param id - terminal id.
+     * @param preserveFocus - set terminal focus in case true value, and don't set focus otherwise.
+     */
+    $show(id: number, preserveFocus?: boolean): void;
+
+    /**
+     * Hide UI panel where is located terminal widget.
+     * @param id - terminal id.
+     */
+    $hide(id: number): void;
+
+    /**
+     * Distroy terminal.
+     * @param id - terminal id.
+     */
+    $dispose(id: number): void;
+}
+
 export interface AutoFocus {
     autoFocusFirstEntry?: boolean;
     // TODO
@@ -87,12 +126,14 @@ export interface WindowStateExt {
 export const PLUGIN_RPC_CONTEXT = {
     COMMAND_REGISTRY_MAIN: <ProxyIdentifier<CommandRegistryMain>>createProxyIdentifier<CommandRegistryMain>('CommandRegistryMain'),
     QUICK_OPEN_MAIN: createProxyIdentifier<QuickOpenMain>('QuickOpenMain'),
-    MESSAGE_REGISTRY_MAIN: <ProxyIdentifier<MessageRegistryMain>>createProxyIdentifier<MessageRegistryMain>('MessageRegistryMain')
+    MESSAGE_REGISTRY_MAIN: <ProxyIdentifier<MessageRegistryMain>>createProxyIdentifier<MessageRegistryMain>('MessageRegistryMain'),
+    TERMINAL_MAIN: createProxyIdentifier<TerminalServiceMain>("TerminalServiceMain"),
 };
 
 export const MAIN_RPC_CONTEXT = {
     HOSTED_PLUGIN_MANAGER_EXT: createProxyIdentifier<HostedPluginManagerExt>('HostedPluginManagerExt'),
     COMMAND_REGISTRY_EXT: createProxyIdentifier<CommandRegistryExt>('CommandRegistryExt'),
     QUICK_OPEN_EXT: createProxyIdentifier<QuickOpenExt>('QuickOpenExt'),
-    WINDOW_STATE_EXT: createProxyIdentifier<WindowStateExt>('WindowStateExt')
+    WINDOW_STATE_EXT: createProxyIdentifier<WindowStateExt>('WindowStateExt'),
+    TERMINAL_EXT: createProxyIdentifier<TerminalServiceExt>("TerminalServiceExt"),
 };

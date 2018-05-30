@@ -16,12 +16,14 @@ import {
 } from '@theia/core/lib/common';
 import {
     CommonMenus, ApplicationShell, KeybindingContribution, KeyCode, Key,
-    KeyModifier, KeybindingRegistry
+    KeyModifier, KeybindingRegistry, Widget
 } from '@theia/core/lib/browser';
 import { WidgetManager } from '@theia/core/lib/browser';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { TERMINAL_WIDGET_FACTORY_ID, TerminalWidgetFactoryOptions, TerminalWidget } from './terminal-widget';
+import { TERMINAL_WIDGET_FACTORY_ID, TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-widget';
 import { TerminalKeybindingContexts } from "./terminal-keybinding-contexts";
+import { TerminalService } from "@theia/core/lib/browser/terminal/terminal-service";
+import {TerminalWidgetOptions, TerminalWidget} from "@theia/core/lib/browser/terminal/terminal-model";
 
 export namespace TerminalCommands {
     export const NEW: Command = {
@@ -31,7 +33,7 @@ export namespace TerminalCommands {
 }
 
 @injectable()
-export class TerminalFrontendContribution implements CommandContribution, MenuContribution, KeybindingContribution {
+export class TerminalFrontendContribution implements TerminalService, CommandContribution, MenuContribution, KeybindingContribution {
 
     constructor(
         @inject(ApplicationShell) protected readonly shell: ApplicationShell,
@@ -43,7 +45,13 @@ export class TerminalFrontendContribution implements CommandContribution, MenuCo
         commands.registerCommand(TerminalCommands.NEW);
         commands.registerHandler(TerminalCommands.NEW.id, {
             isEnabled: () => true,
-            execute: () => this.newTerminal()
+            execute: () => {
+                const newTermPromise = this.newTerminal({});
+                newTermPromise.then(termWidget => {
+                    termWidget.start();
+                    this.activateWidget(termWidget);
+                });
+            }
         });
     }
 
@@ -144,13 +152,22 @@ export class TerminalFrontendContribution implements CommandContribution, MenuCo
         }
     }
 
-    protected async newTerminal(): Promise<void> {
-        const widget = <TerminalWidget>await this.widgetManager.getOrCreateWidget(TERMINAL_WIDGET_FACTORY_ID, <TerminalWidgetFactoryOptions>{
-            created: new Date().toString()
+    public async newTerminal(options: TerminalWidgetOptions): Promise<TerminalWidget & Widget> {
+        const widget = <TerminalWidgetImpl>await this.widgetManager.getOrCreateWidget(TERMINAL_WIDGET_FACTORY_ID, <TerminalWidgetFactoryOptions>{
+            created: new Date().toString(),
+            ...options
         });
-        this.shell.addWidget(widget, { area: 'bottom' });
-        this.shell.activateWidget(widget.id);
-        widget.start();
+        return widget;
     }
 
+    public activateWidget(widget: TerminalWidget & Widget): void {
+        this.shell.addWidget(widget, { area: 'bottom' });
+        this.shell.activateWidget(widget.id);
+    }
+
+    public collapseWidget(termWidget: TerminalWidget & Widget): void {
+        if (termWidget.isVisible) {
+            this.shell.collapsePanel('bottom');
+        }
+    }
 }

@@ -186,6 +186,77 @@ declare module '@theia/plugin' {
     }
 
     /**
+     * Definition of the terminal emulator.
+     */
+    export interface Terminal {
+        /**
+         * Human readable representation of the terminal in the UI.
+         */
+        readonly name: string;
+
+        /**
+         * Terminal id.
+         */
+        readonly processId: Thenable<number>;
+
+        /**
+         * Send text to the terminal.
+         * @param text - text content.
+         * @param addNewLine - in case true - apply new line after the text, otherwise don't apply new line.
+         */
+        sendText(text: string, addNewLine?: boolean): void;
+
+        /**
+         * Show created terminal on the UI.
+         * @param preserveFocus - in case true - set up focus on the terminal widget, otherwise show terminal without focus.
+         */
+        show(preserveFocus?: boolean): void;
+
+        /**
+         * Hide terminal panel.
+         */
+        hide(): void;
+
+        /**
+         * Destroy terminal.
+         */
+        dispose(): void;
+    }
+
+    /**
+     * Options to create terminal widget.
+     */
+    export interface TerminalOptions {
+        /**
+         * Human readable representation of the terminal in the UI.
+         */
+        name?: string;
+
+        /**
+         * Path to the executable shell. For example "/bin/bash", "bash", "sh".
+         */
+        shellPath?: string;
+
+        /**
+         * Arguments to configure executable shell. For example ["-l"] - run shell without login.
+         */
+        shellArgs?: string[];
+
+        /**
+         * Current working directory.
+         */
+        cwd?: string;
+
+        /**
+         * Environment variables for terminal in format key - value.
+         */
+        env?: { [key: string]: string | null };
+    }
+
+    interface Thenable<T> extends PromiseLike<T> {
+    }
+
+    /**
      * Namespace for dealing with commands. In short, a command is a function with a
      * unique identifier. The function is sometimes also called _command handler_.
      *
@@ -439,5 +510,24 @@ declare module '@theia/plugin' {
          * The value of the event represents whether the window is focused.
          */
         export const onDidChangeWindowState: Event<WindowState>;
+
+        /**
+         * Create new terminal.
+         * @param name - terminal name to display on the UI.
+         * @param shellPath - path to the executable shell. For example "/bin/bash", "bash", "sh".
+         * @param shellArgs - arguments to configure executable shell. For example ["-l"] - run shell without login.
+         */
+        export function createTerminal(name?: string, shellPath?: string, shellArgs?: string[]): Terminal;
+
+        /**
+         * Event which fires when terminal did closed. Event value contains closed terminal definition.
+         */
+        export const onDidCloseTerminal: Event<Terminal>;
+
+        /**
+         * Create new terminal with predefined options.
+         * @param - terminal options.
+         */
+        export function createTerminal(options: TerminalOptions): Terminal;
     }
 }
