@@ -40,12 +40,13 @@ export namespace HostedPluginCommands {
 /**
  * Available states of hosted plugin instance.
  */
-export type HostedPluginState =
-    'stopped'
-    | 'starting'
-    | 'running'
-    | 'stopping'
-    | 'failed';
+export enum HostedPluginState {
+    Stopped = 'stopped',
+    Starting = 'starting',
+    Running = 'running',
+    Stopping = 'stopping',
+    Failed = 'failed'
+}
 
 /**
  * Responsible for UI to set up and control Hosted Plugin Instance.
@@ -89,26 +90,26 @@ export class HostedPluginManagerClient {
         }
 
         try {
-            this.stateChanged.fire('starting');
+            this.stateChanged.fire(HostedPluginState.Starting);
             this.messageService.info('Starting hosted instance server ...');
 
             this.pluginInstanceURL = await this.hostedPluginServer.runHostedPluginInstance(this.pluginLocation.toString());
             await this.openPluginWindow();
 
             this.messageService.info('Hosted instance is running at: ' + this.pluginInstanceURL);
-            this.stateChanged.fire('running');
+            this.stateChanged.fire(HostedPluginState.Running);
         } catch (error) {
             this.messageService.error('Failed to run hosted plugin instance: ' + this.getErrorMessage(error));
-            this.stateChanged.fire('failed');
+            this.stateChanged.fire(HostedPluginState.Failed);
         }
     }
 
     async stop(): Promise<void> {
         try {
-            this.stateChanged.fire('stopping');
+            this.stateChanged.fire(HostedPluginState.Stopping);
             await this.hostedPluginServer.terminateHostedPluginInstance();
             this.messageService.info((this.pluginInstanceURL ? this.pluginInstanceURL : 'The instance') + ' has been terminated.');
-            this.stateChanged.fire('stopped');
+            this.stateChanged.fire(HostedPluginState.Stopped);
         } catch (error) {
             this.messageService.warn(this.getErrorMessage(error));
         }
@@ -122,14 +123,14 @@ export class HostedPluginManagerClient {
 
             // It takes some time before OS released all resources e.g. port.
             // Keeping tries to run hosted instance with delay.
-            this.stateChanged.fire('starting');
+            this.stateChanged.fire(HostedPluginState.Starting);
             let lastError;
             for (let tries = 0; tries < 15; tries++) {
                 try {
                     this.pluginInstanceURL = await this.hostedPluginServer.runHostedPluginInstance(this.pluginLocation!.toString());
                     await this.openPluginWindow();
                     this.messageService.info('Hosted instance is running at: ' + this.pluginInstanceURL);
-                    this.stateChanged.fire('running');
+                    this.stateChanged.fire(HostedPluginState.Running);
                     return;
                 } catch (error) {
                     lastError = error;
@@ -141,7 +142,7 @@ export class HostedPluginManagerClient {
             this.messageService.warn('Hosted Plugin instance is not running.');
         }
 
-        this.stateChanged.fire('failed');
+        this.stateChanged.fire(HostedPluginState.Failed);
     }
 
     /**

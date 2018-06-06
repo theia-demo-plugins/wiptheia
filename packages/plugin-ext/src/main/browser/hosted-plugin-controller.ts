@@ -10,8 +10,8 @@ import { StatusBar } from '@theia/core/lib/browser/status-bar/status-bar';
 import { StatusBarAlignment, StatusBarEntry, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { HostedPluginServer } from '../../common/plugin-protocol';
 import { HostedPluginManagerClient, HostedPluginState, HostedPluginCommands } from './plugin-manager-client';
-import { CommandRegistry } from "@phosphor/commands";
-import { Menu } from "@phosphor/widgets";
+import { CommandRegistry } from '@phosphor/commands';
+import { Menu } from '@phosphor/widgets';
 import { setTimeout } from 'timers';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
 import { ConnectionStatusService, ConnectionState } from '@theia/core/lib/browser/connection-status-service';
@@ -42,7 +42,7 @@ export class HostedPluginController implements FrontendApplicationContribution {
     @inject(ConnectionStatusService)
     protected readonly connectionStatusService: ConnectionStatusService;
 
-    private pluginState: HostedPluginState = 'stopped';
+    private pluginState: HostedPluginState = HostedPluginState.Stopped;
 
     private entry: StatusBarEntry | undefined;
 
@@ -78,7 +78,7 @@ export class HostedPluginController implements FrontendApplicationContribution {
      * Display status bar element for stopped plugin.
      */
     protected async onHostedPluginStopped(): Promise<void> {
-        this.pluginState = 'stopped';
+        this.pluginState = HostedPluginState.Stopped;
 
         this.entry = {
             text: `Hosted Plugin: Stopped $(angle-up)`,
@@ -97,8 +97,7 @@ export class HostedPluginController implements FrontendApplicationContribution {
      * Display status bar element for starting plugin.
      */
     protected async onHostedPluginStarting(): Promise<void> {
-
-        this.pluginState = 'starting';
+        this.pluginState = HostedPluginState.Starting;
 
         this.entry = {
             text: `$(cog~spin) Hosted Plugin: Starting`,
@@ -114,7 +113,7 @@ export class HostedPluginController implements FrontendApplicationContribution {
      * Display status bar element for running plugin.
      */
     protected async onHostedPluginRunning(): Promise<void> {
-        this.pluginState = 'running';
+        this.pluginState = HostedPluginState.Running;
 
         this.entry = {
             text: `$(cog~spin) Hosted Plugin: Running $(angle-up)`,
@@ -133,7 +132,7 @@ export class HostedPluginController implements FrontendApplicationContribution {
      * Display status bar element for failed plugin.
      */
     protected async onHostedPluginFailed(): Promise<void> {
-        this.pluginState = 'failed';
+        this.pluginState = HostedPluginState.Failed;
 
         this.entry = {
             text: `Hosted Plugin: Stopped $(angle-up)`,
