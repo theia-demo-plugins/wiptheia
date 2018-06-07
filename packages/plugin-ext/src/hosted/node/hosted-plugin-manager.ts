@@ -104,7 +104,7 @@ export abstract class AbstractHostedPluginManager implements HostedPluginManager
     terminate(): void {
         if (this.isPluginRunnig) {
             processTree(this.hostedInstanceProcess.pid, (err: Error, children: Array<any>) => {
-                const args = ['-SIGTERM', '' + this.hostedInstanceProcess.pid].concat(children.map((p: any) => p.PID));
+                const args = ['-SIGTERM', this.hostedInstanceProcess.pid.toString()].concat(children.map((p: any) => p.PID));
                 cp.spawn('kill', args);
             });
         } else {
