@@ -149,3 +149,21 @@ theia.env.getQueryParameters();
 ```
 
 Note, that it is possible to have an array of values for single name, because it could be specified more than one time (for example `localhost:3000?foo=bar&foo=baz`).
+
+#### Preference API
+
+Preference API allows one to read or update User's and Workspace's preferences.
+
+To get preferences:
+```javascript
+// editor preferences
+const preferences = theia.workspace.getConfiguration('editor');
+
+// retrieving values
+const fontSize = preferences.get('tabSize');
+```
+
+To change preference:
+```javascript
+preferences.update('tabSize', 2);
+```
