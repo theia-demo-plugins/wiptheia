@@ -14,9 +14,10 @@ import {
 } from '../api/plugin-api';
 import { RPCProtocol } from '../api/rpc-protocol';
 import { isObject } from '../common/types';
-import { deepClone } from '../common/objects';
 import { PreferenceChange } from '@theia/core/lib/browser';
 import { ConfigurationTarget } from './types-impl';
+
+import cloneDeep = require('lodash.clonedeep');
 
 interface ConfigurationInspect<T> {
     key: string;
@@ -27,14 +28,16 @@ interface ConfigurationInspect<T> {
 }
 
 function lookUp(tree: any, key: string): any {
-    if (key) {
-        const parts = key.split('.');
-        let node = tree;
-        for (let i = 0; node && i < parts.length; i++) {
-            node = node[parts[i]];
-        }
-        return node;
+    if (!key) {
+        return;
     }
+
+    const parts = key.split('.');
+    let node = tree;
+    for (let i = 0; node && i < parts.length; i++) {
+        node = node[parts[i]];
+    }
+    return node;
 }
 
 export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
@@ -49,12 +52,12 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
     }
 
     $acceptConfigurationChanged(data: { [key: string]: any }, eventData: PreferenceChange): void {
-        this._preferences = this._parse(data);
-        this._onDidChangeConfiguration.fire(this._toConfigurationChangeEvent(eventData));
+        this._preferences = this.parse(data);
+        this._onDidChangeConfiguration.fire(this.toConfigurationChangeEvent(eventData));
     }
 
     getConfiguration(section?: string, resource?: theia.Uri | null, extensionId?: string): theia.WorkspaceConfiguration {
-        const preferences = this._toReadonlyValue(section
+        const preferences = this.toReadonlyValue(section
             ? lookUp(this._preferences, section)
             : this._preferences);
 
@@ -71,43 +74,45 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
                     const cloneOnWriteProxy = (target: any, accessor: string): any => {
                         let clonedTarget: any = undefined;
                         const cloneTarget = () => {
-                            clonedConfig = clonedConfig ? clonedConfig : deepClone(preferences);
+                            clonedConfig = clonedConfig ? clonedConfig : cloneDeep(preferences);
                             clonedTarget = clonedTarget ? cloneTarget : lookUp(clonedConfig, accessor);
                         };
-                        return isObject(target)
-                            ? new Proxy(target, {
-                                get: (targ: any, prop: string) => {
-                                    if (typeof prop === 'string' && prop.toLowerCase() === 'tojson') {
-                                        cloneTarget();
-                                        return () => clonedTarget;
-                                    }
-                                    if (clonedConfig) {
-                                        clonedTarget = cloneTarget ? cloneTarget : lookUp(clonedConfig, accessor);
-                                        return clonedTarget[prop];
-                                    }
-                                    const res = targ[prop];
-                                    if (typeof prop === 'string') {
-                                        return cloneOnWriteProxy(res, `${accessor}.${prop}`);
-                                    }
-                                    return res;
-                                },
-                                set: (targ: any, prop: string, val: any) => {
+
+                        if (!isObject(target)) {
+                            return target;
+                        }
+                        return new Proxy(target, {
+                            get: (targ: any, prop: string) => {
+                                if (typeof prop === 'string' && prop.toLowerCase() === 'tojson') {
                                     cloneTarget();
-                                    clonedTarget[prop] = val;
-                                    return true;
-                                },
-                                deleteProperty: (targ: any, prop: string) => {
-                                    cloneTarget();
-                                    delete clonedTarget[prop];
-                                    return true;
-                                },
-                                defineProperty: (targ: any, prop: string, descr: any) => {
-                                    cloneTarget();
-                                    Object.defineProperty(clonedTarget, prop, descr);
-                                    return true;
+                                    return () => clonedTarget;
                                 }
-                            })
-                            : target;
+                                if (clonedConfig) {
+                                    clonedTarget = cloneTarget ? cloneTarget : lookUp(clonedConfig, accessor);
+                                    return clonedTarget[prop];
+                                }
+                                const res = targ[prop];
+                                if (typeof prop === 'string') {
+                                    return cloneOnWriteProxy(res, `${accessor}.${prop}`);
+                                }
+                                return res;
+                            },
+                            set: (targ: any, prop: string, val: any) => {
+                                cloneTarget();
+                                clonedTarget[prop] = val;
+                                return true;
+                            },
+                            deleteProperty: (targ: any, prop: string) => {
+                                cloneTarget();
+                                delete clonedTarget[prop];
+                                return true;
+                            },
+                            defineProperty: (targ: any, prop: string, descr: any) => {
+                                cloneTarget();
+                                Object.defineProperty(clonedTarget, prop, descr);
+                                return true;
+                            }
+                        });
                     };
                     return cloneOnWriteProxy(result, key);
                 }
@@ -127,7 +132,7 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
         return configuration;
     }
 
-    private _toReadonlyValue(data: any): any {
+    private toReadonlyValue(data: any): any {
         const readonlyProxy = (target: any): any => isObject(target)
             ? new Proxy(target, {
                 get: (targ: any, prop: string) => readonlyProxy(targ[prop]),
@@ -150,7 +155,7 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
         return readonlyProxy(data);
     }
 
-    private _parse(data: any): any {
+    private parse(data: any): any {
         return Object.keys(data).reduce((result: any, key: string) => {
             const parts = key.split('.');
             let branch = result;
@@ -168,7 +173,7 @@ export class PreferenceRegistryExtImpl implements PreferenceRegistryExt {
         }, {});
     }
 
-    private _toConfigurationChangeEvent(eventData: PreferenceChange): theia.ConfigurationChangeEvent {
+    private toConfigurationChangeEvent(eventData: PreferenceChange): theia.ConfigurationChangeEvent {
         return Object.freeze({
             affectsConfiguration: (section: string, uri?: theia.Uri): boolean => {
                 const tree = eventData.preferenceName

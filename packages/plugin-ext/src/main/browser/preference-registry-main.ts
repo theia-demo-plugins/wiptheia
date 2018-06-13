@@ -46,18 +46,16 @@ export class PreferenceRegistryMainImpl implements PreferenceRegistryMain {
 
     private parseConfigurationTarget(arg?: boolean | ConfigurationTarget): PreferenceScope {
         if (arg === void 0 || arg === null) {
-            return PreferenceScope.User;
+            return PreferenceScope.Workspace;
         }
         if (typeof arg === 'boolean') {
             return arg ? PreferenceScope.User : PreferenceScope.Workspace;
         }
 
-        switch (arg) {
-            case ConfigurationTarget.User:
-                return PreferenceScope.User;
-            case ConfigurationTarget.Workspace:
-                return PreferenceScope.Workspace;
-            default: return PreferenceScope.User;
+        if (arg === ConfigurationTarget.User) {
+            return PreferenceScope.User;
+        } else {
+            return PreferenceScope.Workspace;
         }
     }
 
