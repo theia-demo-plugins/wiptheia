@@ -155,7 +155,7 @@ Note, that it is possible to have an array of values for single name, because it
 Preference API allows one to read or update User's and Workspace's preferences.
 
 To get preferences:
-```javascript
+```typescript
 // editor preferences
 const preferences = theia.workspace.getConfiguration('editor');
 
@@ -164,6 +164,12 @@ const fontSize = preferences.get('tabSize');
 ```
 
 To change preference:
-```javascript
+```typescript
+preferences.onDidChangeConfiguration(e => {
+    if (e.affectsConfiguration('editor.tabSize')) {
+        console.log('Property "editor.tabSize" is changed');
+    }
+});
+
 preferences.update('tabSize', 2);
 ```

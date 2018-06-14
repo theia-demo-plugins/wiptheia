@@ -22,15 +22,14 @@ import { ConfigurationTarget } from '../../plugin/types-impl';
 export class PreferenceRegistryMainImpl implements PreferenceRegistryMain {
     private proxy: PreferenceRegistryExt;
     private preferenceService: PreferenceService;
-    private preferenceServiceImpl: PreferenceServiceImpl;
 
     constructor(prc: RPCProtocol, container: interfaces.Container) {
         this.proxy = prc.getProxy(MAIN_RPC_CONTEXT.PREFERENCE_REGISTRY_EXT);
         this.preferenceService = container.get(PreferenceService);
-        this.preferenceServiceImpl = container.get(PreferenceServiceImpl);
+        const preferenceServiceImpl = container.get(PreferenceServiceImpl);
 
-        this.preferenceServiceImpl.onPreferenceChanged(e => {
-            this.proxy.$acceptConfigurationChanged(this.preferenceServiceImpl.getPreferences(), e);
+        preferenceServiceImpl.onPreferenceChanged(e => {
+            this.proxy.$acceptConfigurationChanged(preferenceServiceImpl.getPreferences(), e);
         });
     }
 
