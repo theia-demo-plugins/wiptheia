@@ -12,9 +12,11 @@ import { RPCProtocol } from '../../api/rpc-protocol';
 import { PLUGIN_RPC_CONTEXT } from '../../api/plugin-api';
 import { MessageRegistryMainImpl } from './message-registry-main';
 import { WindowStateMain } from './window-state-main';
+import { WorkspaceMain } from './workspace-main';
 import { StatusBarMessageRegistryMainImpl } from './status-bar-message-registry-main';
 import { EnvMainImpl } from './env-main';
 import { EditorsAndDocumentsMain } from './editors-and-documents-main';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
 
 export function setUpPluginApi(rpc: RPCProtocol, container: interfaces.Container): void {
     const commandRegistryMain = new CommandRegistryMainImpl(rpc, container);
@@ -29,6 +31,12 @@ export function setUpPluginApi(rpc: RPCProtocol, container: interfaces.Container
     // tslint:disable-next-line:no-unused-variable
     // @ts-ignore
     const windowStateMain = new WindowStateMain(rpc);
+
+    const workspaceService: WorkspaceService = container.get(WorkspaceService);
+
+    // tslint:disable-next-line:no-unused-variable
+    // @ts-ignore
+    const workspaceMain = new WorkspaceMain(rpc, workspaceService);
 
     /* tslint:disable */
     new EditorsAndDocumentsMain(rpc, container);

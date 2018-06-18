@@ -15,6 +15,7 @@ import { getPluginId } from '../common/plugin-protocol';
 import { MessageRegistryExt } from './message-registry';
 import { StatusBarMessageRegistryExt } from './status-bar-message-registry';
 import { WindowStateExtImpl } from './window-state';
+import { WorkspaceExtImpl } from './workspace';
 import { EnvExtImpl } from './env';
 import { QueryParameters } from '../common/env';
 import {
@@ -48,6 +49,7 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
     const editorsAndDocuments = rpc.set(MAIN_RPC_CONTEXT.EDITORS_AND_DOCUMENTS_EXT, new EditorsAndDocumentsExtImpl(rpc));
     const editors = rpc.set(MAIN_RPC_CONTEXT.TEXT_EDITORS_EXT, new TextEditorsExtImpl(rpc, editorsAndDocuments));
     const documents = rpc.set(MAIN_RPC_CONTEXT.DOCUMENTS_EXT, new DocumentsExtImpl(rpc, editorsAndDocuments));
+    const workspaceExt = rpc.set(MAIN_RPC_CONTEXT.WORKSPACE_EXT, new WorkspaceExtImpl(rpc));
     const statusBarMessageRegistryExt = new StatusBarMessageRegistryExt(rpc);
     const envExt = rpc.set(MAIN_RPC_CONTEXT.ENV_EXT, new EnvExtImpl(rpc));
 
@@ -155,6 +157,26 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         onDidOpenTextDocument(listener, thisArg?, disposables?) {
             return documents.onDidAddDocument(listener, thisArg, disposables);
         },
+
+        get rootPath(): string | undefined {
+            console.log(">> ask for ROOT path");
+            return "/root/path/test-workspace";
+        },
+
+        get workspaceFolders(): theia.WorkspaceFolder[] | undefined {
+            console.log(">> ask for WORKSPACE FOLDERS");
+            return [];
+        },
+
+        get name(): string {
+            console.log(">> ask for WORKSPACE NAME");
+            return "test-workspace";
+        },
+
+        get onDidChangeWorkspaceFolders(): theia.Event<theia.WorkspaceFoldersChangeEvent> {
+            return workspaceExt.onDidChangeWorkspaceFolders;
+        }
+
     };
 
     const env: typeof theia.env = {
