@@ -1649,20 +1649,49 @@ declare module '@theia/plugin' {
      */
     export namespace window {
 
+        /**
+         * The currently active editor or `undefined`. The active editor is the one
+         * that currently has focus or, when none has focus, the one that has changed
+         * input most recently.
+         */
         export let activeTextEditor: TextEditor | undefined;
 
+        /**
+         * The currently visible editors or an empty array.
+         */
         export let visibleTextEditors: TextEditor[];
 
+        /**
+         * An [event](#Event) which fires when the [active editor](#window.activeTextEditor)
+         * has changed. *Note* that the event also fires when the active editor changes
+         * to `undefined`.
+         */
         export const onDidChangeActiveTextEditor: Event<TextEditor | undefined>;
 
+        /**
+         * An [event](#Event) which fires when the array of [visible editors](#window.visibleTextEditors)
+         * has changed.
+         */
         export const onDidChangeVisibleTextEditors: Event<TextEditor[]>;
 
+        /**
+         * An [event](#Event) which fires when the selection in an editor has changed.
+         */
         export const onDidChangeTextEditorSelection: Event<TextEditorSelectionChangeEvent>;
 
+        /**
+         * An [event](#Event) which fires when the selection in an editor has changed.
+         */
         export const onDidChangeTextEditorVisibleRanges: Event<TextEditorVisibleRangesChangeEvent>;
 
+        /**
+         * An [event](#Event) which fires when the options of an editor have changed.
+         */
         export const onDidChangeTextEditorOptions: Event<TextEditorOptionsChangeEvent>;
 
+        /**
+         * An [event](#Event) which fires when the view column of an editor has changed.
+         */
         export const onDidChangeTextEditorViewColumn: Event<TextEditorViewColumnChangeEvent>;
 
         /**
@@ -2018,13 +2047,80 @@ declare module '@theia/plugin' {
      * the editor-process so that they should be always used instead of nodejs-equivalents.
      */
     export namespace workspace {
+        /**
+         * All text documents currently known to the system.
+         *
+         * @readonly
+         */
         export let textDocuments: TextDocument[];
 
+        /**
+         * An event that is emitted when a [text document](#TextDocument) is opened.
+         *
+         * To add an event listener when a visible text document is opened, use the [TextEditor](#TextEditor) events in the
+         * [window](#window) namespace. Note that:
+         *
+         * - The event is emitted before the [document](#TextDocument) is updated in the
+         * [active text editor](#window.activeTextEditor)
+         * - When a [text document](#TextDocument) is already open (e.g.: open in another [visible text editor](#window.visibleTextEditors)) this event is not emitted
+         *
+         */
         export const onDidOpenTextDocument: Event<TextDocument>;
 
+        /**
+         * An event that is emitted when a [text document](#TextDocument) is disposed.
+         *
+         * To add an event listener when a visible text document is closed, use the [TextEditor](#TextEditor) events in the
+         * [window](#window) namespace. Note that this event is not emitted when a [TextEditor](#TextEditor) is closed
+         * but the document remains open in another [visible text editor](#window.visibleTextEditors).
+         */
         export const onDidCloseTextDocument: Event<TextDocument>;
 
+        /**
+         * An event that is emitted when a [text document](#TextDocument) is changed. This usually happens
+         * when the [contents](#TextDocument.getText) changes but also when other things like the
+         * [dirty](#TextDocument.isDirty)-state changes.
+         */
         export const onDidChangeTextDocument: Event<TextDocumentChangeEvent>;
+
+        /**
+         * Opens a document. Will return early if this document is already open. Otherwise
+         * the document is loaded and the [didOpen](#workspace.onDidOpenTextDocument)-event fires.
+         *
+         * The document is denoted by an [uri](#Uri). Depending on the [scheme](#Uri.scheme) the
+         * following rules apply:
+         * * `file`-scheme: Open a file on disk, will be rejected if the file does not exist or cannot be loaded.
+         * * `untitled`-scheme: A new file that should be saved on disk, e.g. `untitled:c:\frodo\new.js`. The language
+         * will be derived from the file name.
+         * * For all other schemes the registered text document content [providers](#TextDocumentContentProvider) are consulted.
+         *
+         * *Note* that the lifecycle of the returned document is owned by the editor and not by the extension. That means an
+         * [`onDidClose`](#workspace.onDidCloseTextDocument)-event can occur at any time after opening it.
+         *
+         * @param uri Identifies the resource to open.
+         * @return A promise that resolves to a [document](#TextDocument).
+         */
+        export function openTextDocument(uri: Uri): Thenable<TextDocument | undefined>;
+
+        /**
+         * A short-hand for `openTextDocument(Uri.file(fileName))`.
+         *
+         * @see [openTextDocument](#openTextDocument)
+         * @param fileName A name of a file on disk.
+         * @return A promise that resolves to a [document](#TextDocument).
+         */
+        export function openTextDocument(fileName: string): Thenable<TextDocument | undefined>;
+
+        /**
+         * Opens an untitled text document. The editor will prompt the user for a file
+         * path when the document is to be saved. The `options` parameter allows to
+         * specify the *language* and/or the *content* of the document.
+         *
+         * @param options Options to control how the document will be created.
+         * @return A promise that resolves to a [document](#TextDocument).
+         */
+        export function openTextDocument(options?: { language?: string; content?: string; }): Thenable<TextDocument | undefined>;
+
         /**
          * Get a workspace configuration object.
          *

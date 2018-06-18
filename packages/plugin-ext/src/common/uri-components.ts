@@ -11,4 +11,11 @@ export interface UriComponents {
     path: string;
     query: string;
     fragment: string;
+    external?: string;
+}
+
+// some well known URI schemas
+export namespace Schemes {
+    export const file = 'file';
+    export const untitled = 'untitled';
 }
