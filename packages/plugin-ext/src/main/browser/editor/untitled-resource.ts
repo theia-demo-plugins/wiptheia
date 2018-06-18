@@ -16,10 +16,10 @@ let index = 0;
 @injectable()
 export class UntitledResourceResolver implements ResourceResolver {
     resolve(uri: URI): Resource | Promise<Resource> {
-        if (uri.scheme === Schemes.untitled) {
+        if (uri.scheme === Schemes.Untitled) {
             return resources.get(uri.toString())!;
         }
-        throw new Error(`scheme ${uri.scheme} is not '${Schemes.untitled}'`);
+        throw new Error(`scheme ${uri.scheme} is not '${Schemes.Untitled}'`);
     }
 }
 
@@ -50,6 +50,6 @@ export function createUntitledResource(content?: string, language?: string): Uri
             }
         }
     }
-    const resource = new UntitledResource(new URI().withScheme(Schemes.untitled).withPath(`/Untitled-${index++}${extension ? extension : ''}`), content);
+    const resource = new UntitledResource(new URI().withScheme(Schemes.Untitled).withPath(`/Untitled-${index++}${extension ? extension : ''}`), content);
     return monaco.Uri.parse(resource.uri.toString());
 }

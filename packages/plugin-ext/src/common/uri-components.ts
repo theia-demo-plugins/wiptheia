@@ -16,6 +16,6 @@ export interface UriComponents {
 
 // some well known URI schemas
 export namespace Schemes {
-    export const file = 'file';
-    export const untitled = 'untitled';
+    export const File = 'file';
+    export const Untitled = 'untitled';
 }
