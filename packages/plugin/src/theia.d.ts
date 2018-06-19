@@ -1889,7 +1889,7 @@ declare module '@theia/plugin' {
          * *Note:* The [Uri](#Uri)-type was intentionally chosen such that future releases of the editor can support
          * workspace folders that are not stored on the local disk, e.g. `ftp://server/workspaces/foo`.
          */
-        // readonly uri: Uri;
+        readonly uri: Uri;
 
         /**
          * The name of this workspace folder. Defaults to

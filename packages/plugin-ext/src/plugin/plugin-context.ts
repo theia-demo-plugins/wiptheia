@@ -132,7 +132,6 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         createStatusBarItem(alignment?: theia.StatusBarAlignment, priority?: number): theia.StatusBarItem {
             return statusBarMessageRegistryExt.createStatusBarItem(alignment, priority);
         },
-
         get state(): theia.WindowState {
             return windowStateExt.getWindowState();
         },
@@ -157,26 +156,18 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         onDidOpenTextDocument(listener, thisArg?, disposables?) {
             return documents.onDidAddDocument(listener, thisArg, disposables);
         },
-
         get rootPath(): string | undefined {
-            console.log(">> ask for ROOT path");
-            return "/root/path/test-workspace";
+            return workspaceExt.rootPath;
         },
-
         get workspaceFolders(): theia.WorkspaceFolder[] | undefined {
-            console.log(">> ask for WORKSPACE FOLDERS");
-            return [];
+            return workspaceExt.workspaceFolders;
         },
-
-        get name(): string {
-            console.log(">> ask for WORKSPACE NAME");
-            return "test-workspace";
+        get name(): string | undefined {
+            return workspaceExt.name;
         },
-
-        get onDidChangeWorkspaceFolders(): theia.Event<theia.WorkspaceFoldersChangeEvent> {
-            return workspaceExt.onDidChangeWorkspaceFolders;
+        onDidChangeWorkspaceFolders(listener, thisArg?, disposables?): theia.Disposable {
+            return workspaceExt.onDidChangeWorkspaceFolders(listener, thisArg, disposables);
         }
-
     };
 
     const env: typeof theia.env = {
@@ -217,7 +208,6 @@ export function createAPI(rpc: RPCProtocol): typeof theia {
         DecorationRangeBehavior,
         OverviewRulerLane,
     };
-
 }
 
 // tslint:disable-next-line:no-any

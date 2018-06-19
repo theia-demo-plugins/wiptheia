@@ -8,9 +8,9 @@
 import { WorkspaceExt, MAIN_RPC_CONTEXT } from "../../api/plugin-api";
 import { RPCProtocol } from "../../api/rpc-protocol";
 import { WorkspaceService } from "@theia/workspace/lib/browser";
-import { FileStat } from '@theia/filesystem/lib/common';
 import Uri from 'vscode-uri';
-import { WorkspaceFoldersChangeEvent } from "@theia/plugin";
+import { WorkspaceFoldersChangeEvent, WorkspaceFolder } from "@theia/plugin";
+import { Path } from "@theia/core/lib/common/path";
 
 export class WorkspaceMain {
 
@@ -21,21 +21,27 @@ export class WorkspaceMain {
     constructor(rpc: RPCProtocol, workspaceService: WorkspaceService) {
         this.proxy = rpc.getProxy(MAIN_RPC_CONTEXT.WORKSPACE_EXT);
 
-        console.log(">> CREATING WORKSPACE MAIN");
-
         workspaceService.root.then((root) => {
-            console.log("<< ROOT FOLDER CHANGED ", root);
             if (root) {
-                const stat: FileStat = root as FileStat;
-                console.log(">> stat " + stat.uri);
-
                 this.workspaceRoot = Uri.parse(root.uri);
-                console.log(">> uri >> ", this.workspaceRoot);
-            } else {
-                this.workspaceRoot = undefined;
-            }
+                const workspacePath = new Path(this.workspaceRoot.path);
 
-            this.proxy.$onWorkspaceFoldersChanged({} as WorkspaceFoldersChangeEvent);
+                const folder: WorkspaceFolder = {
+                    uri: this.workspaceRoot,
+                    name: workspacePath.base,
+                    index: 0
+                } as WorkspaceFolder;
+
+                this.proxy.$onWorkspaceFoldersChanged({
+                    added: [folder],
+                    removed: []
+                } as WorkspaceFoldersChangeEvent);
+            } else {
+                this.proxy.$onWorkspaceFoldersChanged({
+                    added: [],
+                    removed: []
+                } as WorkspaceFoldersChangeEvent);
+            }
         });
     }
 
